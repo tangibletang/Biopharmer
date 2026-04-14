@@ -6,15 +6,13 @@ import Sidebar from './components/Sidebar'
 import TimelineTab from './components/tabs/TimelineTab'
 import ProximityMapTab from './components/tabs/ProximityMapTab'
 import WarRoomTab from './components/tabs/WarRoomTab'
-import ResearchTab from './components/tabs/ResearchTab'
 
-type Tab = 'timeline' | 'proximity' | 'warroom' | 'research'
+type Tab = 'timeline' | 'proximity' | 'warroom'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'timeline',  label: 'Timeline' },
   { id: 'proximity', label: 'Proximity Map' },
   { id: 'warroom',   label: 'War Room' },
-  { id: 'research',  label: 'Research' },
 ]
 
 export default function Home() {
@@ -64,7 +62,6 @@ export default function Home() {
           {activeTab === 'timeline'  && <TimelineTab  ticker={ticker} />}
           {activeTab === 'proximity' && <ProximityMapTab ticker={ticker} />}
           {activeTab === 'warroom'   && <WarRoomTab   ticker={ticker} />}
-          {activeTab === 'research'  && <ResearchTab />}
         </main>
       </div>
     </div>

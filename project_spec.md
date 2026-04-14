@@ -40,6 +40,6 @@ To ensure high-fidelity responses without live-scraping rate limits, the MVP is 
 3. **Feature 2 (Proximity Map Tab):** Use D3.js `forceSimulation` to render a network graph of the companies. Nodes are pulled closer based on the similarity scores fetched from `/api/peers`. Clicking a node opens a Recharts Radar Chart comparing its `emax_pct`, `half_life_days`, and `grade_3_ae_pct` against the base ticker. Include an "Audit" button to display the `audit_text`.
 4. **Feature 3 (War Room Tab):** A UI to trigger the `/api/diligence` endpoint. Show a loading state with steps ("Biologist analyzing...", "Toxicologist challenging..."). Render the final Synthesizer JSON output in a clean Bull vs. Bear matrix component.
 
-## Future: Option A — Multi-agent scientific ideation
+## Option A (parallel War Room)
 
-Roadmap (parallel exploration, debate loops, human steering, ranked outputs): **`docs/OPTION_A_ROADMAP.md`**
+Parallel explorer/critic/synthesis for the **selected ticker** is implemented via `GET /api/diligence/{ticker}` (see `docs/OPTION_A_ROADMAP.md` for future session persistence and steering).

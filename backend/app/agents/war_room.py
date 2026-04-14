@@ -1,13 +1,8 @@
 """
-Multi-Agent War Room — LangGraph state graph
-============================================
-Three sequential agents analyze a DMD-universe ticker:
+Legacy LangGraph War Room (linear biologist → toxicologist → synthesizer).
 
-  fetch_context → biologist → toxicologist → synthesizer → END
-
-State flows forward; each node receives the full state and adds its output.
-Tools are executed inside the node functions (pre-LLM retrieval), then the
-context is handed to the OpenAI chat model for the analytical narrative.
+**Production diligence** uses `app.agents.ticker_war_room` (parallel explorers/critics + merger)
+behind `GET /api/diligence/{ticker}`. This module remains for `search_scientific_peers` and reference.
 """
 
 from __future__ import annotations

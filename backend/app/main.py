@@ -8,7 +8,7 @@ Run with:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import peers, diligence, research
+from app.routers import peers, diligence
 
 app = FastAPI(
     title="Biopharmer API",
@@ -35,7 +35,6 @@ app.add_middleware(
 # ── Routers ─────────────────────────────────────────────────────────────────
 app.include_router(peers.router,     prefix="/api", tags=["peers"])
 app.include_router(diligence.router, prefix="/api", tags=["diligence"])
-app.include_router(research.router,  prefix="/api", tags=["research"])
 
 
 # ── Health check ─────────────────────────────────────────────────────────────

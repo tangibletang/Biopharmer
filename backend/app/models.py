@@ -1,7 +1,5 @@
 """Pydantic response models for the Biopharmer API."""
 
-from datetime import datetime
-
 from pydantic import BaseModel, Field
 
 
@@ -29,9 +27,9 @@ class PeersResponse(BaseModel):
 # ── /api/diligence/{ticker} ────────────────────────────────────────────────
 
 class DiligenceStep(BaseModel):
-    step: str                  # "biologist" | "toxicologist" | "synthesizer"
+    step: str
     status: str                # "complete"
-    output: str                # raw LLM analysis for that step
+    output: str                # human-readable summary for this step
 
 
 class SynthesisOutput(BaseModel):
@@ -40,49 +38,24 @@ class SynthesisOutput(BaseModel):
     actionable_metric: str
 
 
+class ParallelBranch(BaseModel):
+    label: str
+    explorer: str
+    critic: str
+
+
+class RankedDirectionItem(BaseModel):
+    rank: int = 0
+    title: str = ""
+    rationale: str = ""
+    key_risks: str = ""
+    next_step: str = ""
+
+
 class DiligenceResponse(BaseModel):
     ticker: str
     steps: list[DiligenceStep]
     synthesis: SynthesisOutput
-
-
-# ── /api/research/sessions (Option A Phase 1) ─────────────────────────────────
-
-class ResearchSessionCreate(BaseModel):
-    question: str = Field(..., min_length=8, max_length=8000)
-    parallelism: int = Field(3, ge=1, le=5)
-    max_rounds: int = Field(1, ge=1, le=3)
-
-
-class ResearchMessageOut(BaseModel):
-    role: str
-    agent_name: str | None = None
-    content: str
-    metadata: dict = Field(default_factory=dict)
-    created_at: datetime
-
-
-class ResearchThreadOut(BaseModel):
-    id: str
-    label: str
-    status: str
-    sort_order: int
-    created_at: datetime
-    messages: list[ResearchMessageOut]
-
-
-class ResearchSessionDetail(BaseModel):
-    id: str
-    question: str
-    status: str
-    config: dict = Field(default_factory=dict)
-    error_message: str | None = None
-    final_output: dict | None = None
-    created_at: datetime
-    updated_at: datetime
-    threads: list[ResearchThreadOut]
-
-
-class ResearchSessionCreateResponse(BaseModel):
-    id: str
-    status: str
+    parallel_branches: list[ParallelBranch] = Field(default_factory=list)
+    ranked_directions: list[RankedDirectionItem] = Field(default_factory=list)
+    synthesis_note: str | None = None

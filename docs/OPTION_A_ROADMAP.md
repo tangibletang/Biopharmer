@@ -37,19 +37,19 @@ This document is the execution plan. It builds on the existing stack: **FastAPI*
 
 **Goal:** Prove parallel exploration + inspectable trace without full human-in-the-loop.
 
-**Status:** Implemented — tables in `schema.sql` (Option A section), pipeline in `backend/app/agents/research_ideation.py`, API in `backend/app/routers/research.py`, **Research** tab in the Next.js app.
+**Status (Phase 1, revised):** The parallel explorer → critic → merger stack lives inside **ticker-scoped War Room** (`GET /api/diligence/{ticker}`), not a separate open-ended Research UI. Implementation: `app/agents/parallel_debate.py`, `app/agents/ticker_war_room.py`. The standalone `/api/research/sessions` API and **Research** tab were removed in favor of stock-focused diligence.
 
 **Backend**
 
-- [x] Postgres: `research_sessions`, `research_threads`, `research_messages`.
-- [x] `POST /api/research/sessions` — `{ question, parallelism, max_rounds }` → `{ id, status: pending }`; work runs in FastAPI `BackgroundTasks` + `asyncio`.
-- [x] Parallel **explorers** (rotating personas) → parallel **critics** → **merger** JSON (`ranked_directions`, `synthesis_note`).
-- [x] `GET /api/research/sessions/{id}` — session + threads + messages + `final_output`.
-- [ ] Optional: `GET /api/research/sessions/{id}/stream` (SSE).
+- [x] Parallel **explorers** (investment personas) → parallel **critics** → **merger** JSON (`ranked_directions`, `bull_case`, `bear_case`, `actionable_metric`, `synthesis_note`).
+- [x] `GET /api/diligence/{ticker}?parallelism=1–5` — returns branches + ranked list + synthesis (no separate session poll).
+- [ ] Optional: persisted session IDs + `GET /api/research/sessions/{id}/stream` (SSE) if you want async UX later.
 
 **Frontend**
 
-- [x] **Research** tab — question form, parallel branches (1–5), poll until complete/failed, branch trace + ranked output.
+- [x] **War Room** tab — parallel branches control, branch trace, ranked directions, bull/bear matrix.
+
+**Legacy:** `research_sessions` / `research_threads` / `research_messages` in `schema.sql` are optional; nothing in the current app writes to them. You can drop those tables in Supabase or leave them.
 
 **Done when:** A user can submit one open-ended question and see **N parallel threads** and a **structured ranked output**, with full message history in the API response.
 
@@ -114,7 +114,7 @@ This document is the execution plan. It builds on the existing stack: **FastAPI*
 ## Non-goals (initially)
 
 - Full autonomous web browsing without citations guardrails.
-- Replacing the existing **ticker War Room** — keep it; Option A is a **new surface** (`/api/research/...`) until you decide to merge UX.
+- The parallel pipeline is **merged into War Room** (`/api/diligence/...`); further Option A work is session persistence, SSE, and human steering (Phase 2–3).
 
 ---
 

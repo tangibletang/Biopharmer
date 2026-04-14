@@ -47,8 +47,9 @@ end;
 $$;
 
 -- ============================================================
--- Option A — Research ideation sessions (Phase 1)
--- Run this section after initial schema if upgrading an existing DB.
+-- Option A — Research session tables (optional / legacy)
+-- Not used by the current API (parallel War Room uses /api/diligence only).
+-- Safe to skip for new installs; drop if you created these and no longer need them.
 -- ============================================================
 
 create table if not exists research_sessions (
