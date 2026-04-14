@@ -4,11 +4,11 @@ import type { ClinicalSnapshot, Milestone, StockPoint, TickerMeta, Ticker } from
 
 export const CLINICAL_DATA: Record<Ticker, ClinicalSnapshot> = {
   DYNE: {
-    emax_pct: 18.5,
+    emax_pct: 8.72,
     half_life_days: 28.0,
     grade_3_ae_pct: 6.2,
     audit_text:
-      'DYNE-251 / z-rostudirsen (exon 51 skip). DELIVER Ph1/2: mean dystrophin 18.5% at week 24 (Phase 1/2 interim, 20 mg/kg Q4W cohort). Registrational topline (March 2026): 5.46% dystrophin by WB at 6 months — lower by method but with unprecedented functional improvement at 18 months. FDA Breakthrough Therapy Designation granted Aug 2025. BLA submission planned Q2 2026.',
+      'Z-rostudirsen (DYNE-251, exon 51 skip). DELIVER REC topline: primary endpoint met — 5.46% dystrophin at 6 months (muscle content-adjusted, p<0.0001), 7-fold change from baseline; 8.72% unadjusted. Unprecedented functional improvement at 24 months. BTD granted Aug 2025. BLA submission Q2 2026.',
   },
   RNA: {
     emax_pct: 25.0,
@@ -25,9 +25,9 @@ export const CLINICAL_DATA: Record<Ticker, ClinicalSnapshot> = {
       'ELEVIDYS (delandistrogene moxeparvovec, SRP-9001). FDA accelerated approval June 2023; label expanded to ages 4+ in June 2024. EMBARK Part 2 positive (Jan 2025), 3-year durability data positive (Jan 2026). Three patient deaths from acute liver failure (Mar, Jun, Jul 2025) led to FDA-mandated boxed warning (Nov 2025) and indication narrowing to ambulatory patients only. AAVrh74 serotype.',
   },
   WVE: {
-    emax_pct: 9.8,
+    emax_pct: 9.0,
     half_life_days: 14.0,
-    grade_3_ae_pct: 3.1,
+    grade_3_ae_pct: 0.0,
     audit_text:
       'WVE-N531 (exon 53 skip). FORWARD-53 Ph2 (n=11): 24-week mean dystrophin 9.0% (4.6–13.9%), 48-week 7.8% (88% boys >5%). Best-in-class safety: no SAEs. FDA confirmed accelerated approval pathway; NDA submission planned 2026. WVE-007 (obesity/GLP-1 complement) spiked 183% in Dec 2025 on Phase 1 fat data, then crashed 56% Mar 2026 when high-dose cohort disappointed.',
   },
