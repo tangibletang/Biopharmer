@@ -1,20 +1,14 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
-import * as d3 from 'd3'
+import { useMemo, useCallback, useState, useEffect } from 'react'
 import type { Ticker, PeersResponse, PeerResult } from '../../types'
-import { ALL_TICKERS, TICKER_COLORS, COMPANY_NAMES, CLINICAL_DATA } from '../../mockData'
+import { ALL_TICKERS, TICKER_COLORS, CLINICAL_DATA } from '../../mockData'
 import RadarModal from '../RadarModal'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
-const SVG_W = 620
-const SVG_H = 400
-
-interface SimNode extends d3.SimulationNodeDatum {
-  id: Ticker
-  isBase: boolean
-}
+const SVG_W = 680
+const SVG_H = 420
 
 interface RawLink {
   source: string
@@ -24,16 +18,60 @@ interface RawLink {
 
 interface Props { ticker: Ticker }
 
-export default function ProximityMapTab({ ticker }: Props) {
-  const [peersData, setPeersData]     = useState<PeersResponse | null>(null)
-  const [loading, setLoading]         = useState(false)
-  const [error, setError]             = useState<string | null>(null)
-  const [nodePositions, setNodePositions] = useState<Map<string, { x: number; y: number }>>(new Map())
-  const [renderedLinks, setRenderedLinks] = useState<RawLink[]>([])
-  const [selectedPeer, setSelectedPeer]   = useState<PeerResult | null>(null)
-  const simRef = useRef<d3.Simulation<SimNode, undefined> | null>(null)
+/** Hub at center; peers on a ring with radius ∝ (1 − similarity). Orphans sit outside the peer ring. */
+function computeHubLayout(
+  base: Ticker,
+  peers: PeerResult[],
+  svgW: number,
+  svgH: number,
+): { nodePositions: Map<string, { x: number; y: number }>; renderedLinks: RawLink[] } {
+  const cx = svgW / 2
+  const cy = svgH / 2
+  const rMin = 92
+  const rMax = 142
+  const orphanR = 168
 
-  // ── Fetch peers ────────────────────────────────────────────────────────────
+  const sortedPeers = [...peers].sort((a, b) => b.similarity - a.similarity)
+  const n = sortedPeers.length
+  const peerSet = new Set(sortedPeers.map(p => p.ticker))
+
+  const positions = new Map<string, { x: number; y: number }>()
+  positions.set(base, { x: cx, y: cy })
+
+  for (let i = 0; i < n; i++) {
+    const p = sortedPeers[i]
+    const angle = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(n, 1)
+    const r = rMin + (1 - p.similarity) * (rMax - rMin)
+    positions.set(p.ticker, {
+      x: cx + Math.cos(angle) * r,
+      y: cy + Math.sin(angle) * r,
+    })
+  }
+
+  for (const t of ALL_TICKERS) {
+    if (t === base || peerSet.has(t)) continue
+    const angle = Math.PI / 2
+    positions.set(t, {
+      x: cx + Math.cos(angle) * orphanR,
+      y: cy + Math.sin(angle) * orphanR,
+    })
+  }
+
+  const links: RawLink[] = sortedPeers.map(p => ({
+    source: base,
+    target: p.ticker,
+    similarity: p.similarity,
+  }))
+
+  return { nodePositions: positions, renderedLinks: links }
+}
+
+export default function ProximityMapTab({ ticker }: Props) {
+  const [peersData, setPeersData] = useState<PeersResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedPeer, setSelectedPeer] = useState<PeerResult | null>(null)
+
   useEffect(() => {
     setLoading(true)
     setError(null)
@@ -49,54 +87,22 @@ export default function ProximityMapTab({ ticker }: Props) {
       .finally(() => setLoading(false))
   }, [ticker])
 
-  // ── Run D3 force simulation ────────────────────────────────────────────────
-  useEffect(() => {
-    if (!peersData) return
-    if (simRef.current) simRef.current.stop()
+  const { nodePositions, renderedLinks } = useMemo(
+    () =>
+      peersData
+        ? computeHubLayout(ticker, peersData.peers, SVG_W, SVG_H)
+        : { nodePositions: new Map<string, { x: number; y: number }>(), renderedLinks: [] as RawLink[] },
+    [ticker, peersData],
+  )
 
-    const nodes: SimNode[] = ALL_TICKERS.map(t => ({
-      id: t,
-      isBase: t === ticker,
-      // Scatter initial positions around center so force has work to do
-      x: SVG_W / 2 + (Math.random() - 0.5) * 160,
-      y: SVG_H / 2 + (Math.random() - 0.5) * 160,
-    }))
-
-    const links: RawLink[] = peersData.peers.map(p => ({
-      source: ticker,
-      target: p.ticker,
-      similarity: p.similarity,
-    }))
-
-    // D3 handles ONLY the physics math — React renders the SVG
-    const sim = d3.forceSimulation<SimNode>(nodes)
-      .force(
-        'link',
-        d3.forceLink<SimNode, RawLink>(links as d3.SimulationLinkDatum<SimNode>[])
-          .id(d => d.id)
-          .strength(d => (d as unknown as RawLink).similarity * 0.6)
-          .distance(d => Math.max(100, (1 - (d as unknown as RawLink).similarity) * 280)),
-      )
-      .force('charge', d3.forceManyBody<SimNode>().strength(-200))
-      .force('center', d3.forceCenter<SimNode>(SVG_W / 2, SVG_H / 2))
-      .force('collision', d3.forceCollide<SimNode>(58))
-      .stop()
-
-    // Run synchronously to convergence — fast for 4 nodes
-    for (let i = 0; i < 300; i++) sim.tick()
-
-    setNodePositions(new Map(nodes.map(n => [n.id, { x: n.x ?? SVG_W / 2, y: n.y ?? SVG_H / 2 }])))
-    setRenderedLinks(links)
-    simRef.current = sim
-  }, [ticker, peersData])
-
-  const handleNodeClick = useCallback((id: string) => {
-    if (id === ticker) return
-    const peer = peersData?.peers.find(p => p.ticker === id) ?? null
-    setSelectedPeer(peer)
-  }, [ticker, peersData])
-
-  // ── Render ─────────────────────────────────────────────────────────────────
+  const handleNodeClick = useCallback(
+    (id: string) => {
+      if (id === ticker) return
+      const peer = peersData?.peers.find(p => p.ticker === id) ?? null
+      setSelectedPeer(peer)
+    },
+    [ticker, peersData],
+  )
 
   if (loading) {
     return (
@@ -118,26 +124,43 @@ export default function ProximityMapTab({ ticker }: Props) {
 
   if (!peersData) return null
 
+  const cx = SVG_W / 2
+  const cy = SVG_H / 2
+  const guideRadii = [72, 112, 152]
+
   return (
     <div className="space-y-6">
-      {/* Force graph */}
       <div className="bg-surface border border-border rounded-lg p-5">
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-sm font-semibold text-[#e6edf3]">Scientific Proximity Network</h2>
           <span className="text-xs text-muted">Cosine similarity on mechanism embeddings</span>
         </div>
         <p className="text-xs text-muted mb-4">
-          Edge thickness = similarity score. Click a peer node to compare clinical metrics.
+          Hub layout: selected ticker at center, peers on a ring (closer = more similar). Edge thickness = similarity
+          score. Click a peer node to compare clinical metrics.
         </p>
 
-        {/* D3 physics drives layout; React renders the SVG */}
         <svg
           width="100%"
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
           className="rounded"
+          role="img"
+          aria-label={`Scientific proximity network centered on ${ticker}`}
           style={{ background: '#0d1117' }}
         >
-          {/* Links */}
+          <title>Scientific proximity network for {ticker}</title>
+          <desc>
+            Hub layout: {ticker} at center, peers on a ring by similarity; edges show embedding cosine similarity.
+          </desc>
+
+          {/* Light structure only — same palette as rest of app */}
+          <g aria-hidden stroke="#30363d" fill="none" opacity={0.45}>
+            {guideRadii.map((r, i) => (
+              <circle key={r} cx={cx} cy={cy} r={r} strokeWidth={1} strokeDasharray={i === 1 ? '4 8' : '2 5'} />
+            ))}
+          </g>
+
+          {/* Links — flat accent blue like the original force graph */}
           {renderedLinks.map(link => {
             const src = nodePositions.get(link.source)
             const tgt = nodePositions.get(link.target)
@@ -145,8 +168,10 @@ export default function ProximityMapTab({ ticker }: Props) {
             return (
               <line
                 key={`${link.source}-${link.target}`}
-                x1={src.x} y1={src.y}
-                x2={tgt.x} y2={tgt.y}
+                x1={src.x}
+                y1={src.y}
+                x2={tgt.x}
+                y2={tgt.y}
                 stroke="#58a6ff"
                 strokeWidth={link.similarity * 5}
                 strokeOpacity={0.3 + link.similarity * 0.4}
@@ -154,7 +179,7 @@ export default function ProximityMapTab({ ticker }: Props) {
             )
           })}
 
-          {/* Similarity labels on links */}
+          {/* Similarity % (plain text, matches original) */}
           {renderedLinks.map(link => {
             const src = nodePositions.get(link.source)
             const tgt = nodePositions.get(link.target)
@@ -164,7 +189,8 @@ export default function ProximityMapTab({ ticker }: Props) {
             return (
               <text
                 key={`label-${link.source}-${link.target}`}
-                x={mx} y={my}
+                x={mx}
+                y={my}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill="#8b949e"
@@ -180,17 +206,16 @@ export default function ProximityMapTab({ ticker }: Props) {
             const pos = nodePositions.get(t)
             if (!pos) return null
             const isBase = t === ticker
-            const color  = TICKER_COLORS[t]
-            const r      = isBase ? 44 : 34
+            const color = TICKER_COLORS[t]
+            const r = isBase ? 44 : 34
             const isPeer = peersData.peers.some(p => p.ticker === t)
             return (
               <g
                 key={t}
                 transform={`translate(${pos.x},${pos.y})`}
-                style={{ cursor: isBase ? 'default' : 'pointer' }}
+                style={{ cursor: isBase ? 'default' : isPeer ? 'pointer' : 'default' }}
                 onClick={() => handleNodeClick(t)}
               >
-                {/* Glow ring for base */}
                 {isBase && (
                   <circle r={r + 8} fill="none" stroke={color} strokeWidth={1} strokeOpacity={0.25} />
                 )}
@@ -207,19 +232,18 @@ export default function ProximityMapTab({ ticker }: Props) {
                   fill={isBase ? '#0d1117' : color}
                   fontSize={isBase ? 13 : 11}
                   fontWeight="bold"
-                  dy={isPeer ? -5 : 0}
+                  dy={!isBase && isPeer ? -5 : !isBase && !isPeer ? -4 : 0}
                 >
                   {t}
                 </text>
-                {isPeer && (
-                  <text
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    dy={9}
-                    fill="#8b949e"
-                    fontSize={9}
-                  >
+                {isPeer && !isBase && (
+                  <text textAnchor="middle" dominantBaseline="middle" dy={9} fill="#8b949e" fontSize={9}>
                     click to compare
+                  </text>
+                )}
+                {!isPeer && !isBase && (
+                  <text textAnchor="middle" dominantBaseline="middle" dy={10} fill="#6e7681" fontSize={8}>
+                    not in top-3 peers
                   </text>
                 )}
               </g>
@@ -228,7 +252,6 @@ export default function ProximityMapTab({ ticker }: Props) {
         </svg>
       </div>
 
-      {/* Peer cards */}
       <div className="grid grid-cols-3 gap-4">
         {peersData.peers.map(peer => (
           <div
@@ -264,7 +287,6 @@ export default function ProximityMapTab({ ticker }: Props) {
         ))}
       </div>
 
-      {/* Radar modal */}
       {selectedPeer && (
         <RadarModal
           baseTicker={ticker}
