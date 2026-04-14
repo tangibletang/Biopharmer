@@ -57,3 +57,47 @@ export interface TickerMeta {
   prices: StockPoint[]
   milestones: Milestone[]
 }
+
+/** /api/research/sessions — Option A ideation */
+export interface ResearchMessage {
+  role: string
+  agent_name: string | null
+  content: string
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export interface ResearchThread {
+  id: string
+  label: string
+  status: string
+  sort_order: number
+  created_at: string
+  messages: ResearchMessage[]
+}
+
+export interface RankedDirection {
+  rank: number
+  title: string
+  rationale: string
+  key_risks: string
+  next_step: string
+}
+
+export interface ResearchFinalOutput {
+  ranked_directions?: RankedDirection[]
+  synthesis_note?: string
+  parse_error?: boolean
+}
+
+export interface ResearchSessionDetail {
+  id: string
+  question: string
+  status: string
+  config: Record<string, unknown>
+  error_message: string | null
+  final_output: ResearchFinalOutput | null
+  created_at: string
+  updated_at: string
+  threads: ResearchThread[]
+}

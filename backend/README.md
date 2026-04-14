@@ -16,8 +16,12 @@ Interactive docs: http://localhost:8000/docs
 | GET | `/health` | Health check |
 | GET | `/api/peers/{ticker}` | pgvector cosine-similarity peer search + clinical metrics |
 | GET | `/api/diligence/{ticker}` | LangGraph War Room — 3-agent analysis + synthesis |
+| POST | `/api/research/sessions` | Option A — start parallel research ideation (background job) |
+| GET | `/api/research/sessions/{session_id}` | Poll session status, threads, messages, and ranked JSON output |
 
 Valid tickers: `DYNE`, `RNA`, `SRPT`, `WVE`
+
+**Research ideation** requires the `research_sessions` / `research_threads` / `research_messages` tables. If you set up the DB before this feature existed, run the **Option A** section at the bottom of `schema.sql` in the Supabase SQL editor (or paste only that block).
 
 ---
 

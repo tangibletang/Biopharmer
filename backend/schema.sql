@@ -45,3 +45,47 @@ begin
   execute sql;
 end;
 $$;
+
+-- ============================================================
+-- Option A — Research ideation sessions (Phase 1)
+-- Run this section after initial schema if upgrading an existing DB.
+-- ============================================================
+
+create table if not exists research_sessions (
+    id              uuid primary key default gen_random_uuid(),
+    question        text not null,
+    status          text not null default 'pending'
+                    check (status in ('pending', 'running', 'completed', 'failed')),
+    config          jsonb not null default '{}',
+    error_message   text,
+    final_output    jsonb,
+    created_at      timestamptz not null default now(),
+    updated_at      timestamptz not null default now()
+);
+
+create table if not exists research_threads (
+    id          uuid primary key default gen_random_uuid(),
+    session_id  uuid not null references research_sessions(id) on delete cascade,
+    label       text not null,
+    status      text not null default 'active'
+                check (status in ('active', 'pinned', 'cancelled')),
+    sort_order  int not null default 0,
+    created_at  timestamptz not null default now()
+);
+
+create index if not exists research_threads_session_idx
+    on research_threads (session_id);
+
+create table if not exists research_messages (
+    id          bigserial primary key,
+    thread_id   uuid not null references research_threads(id) on delete cascade,
+    role        text not null
+                check (role in ('explorer', 'critic', 'merger', 'system')),
+    agent_name  text,
+    content     text not null,
+    metadata    jsonb not null default '{}',
+    created_at  timestamptz not null default now()
+);
+
+create index if not exists research_messages_thread_idx
+    on research_messages (thread_id);
