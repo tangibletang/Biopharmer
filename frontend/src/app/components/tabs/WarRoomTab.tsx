@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Ticker, DiligenceResponse } from '../../types'
 import BullBearMatrix from '../BullBearMatrix'
 
@@ -13,11 +13,37 @@ const ROLE_STYLES: Record<string, string> = {
   critic:   'border-negative/35 bg-negative/5',
 }
 
+function runningMessages(parallelism: number): string[] {
+  const n = Math.min(Math.max(parallelism, 1), 5)
+  return [
+    `Wiring ${n} parallel explorer${n > 1 ? 's' : ''} to OpenAI…`,
+    'Pulling mechanism text, clinical metrics & pgvector peers from Postgres…',
+    'Explorers drafting investment angles (mechanism, clinical, competition…)…',
+    'Critics stress-testing each branch for gaps and overreach…',
+    'Synthesizer merging into ranked thesis + bull / bear / catalyst…',
+    'Almost there — packaging your report…',
+  ]
+}
+
 export default function WarRoomTab({ ticker }: Props) {
   const [parallelism, setParallelism] = useState(3)
   const [result, setResult]       = useState<DiligenceResponse | null>(null)
   const [error, setError]         = useState<string | null>(null)
   const [running, setRunning]     = useState(false)
+  const [runTick, setRunTick]     = useState(0)
+
+  useEffect(() => {
+    if (!running) return
+    const msgs = runningMessages(parallelism)
+    const id = window.setInterval(() => {
+      setRunTick(t => (t + 1) % msgs.length)
+    }, 2400)
+    return () => clearInterval(id)
+  }, [running, parallelism])
+
+  useEffect(() => {
+    if (running) setRunTick(0)
+  }, [running])
 
   const handleRun = async () => {
     setRunning(true)
@@ -40,6 +66,8 @@ export default function WarRoomTab({ ticker }: Props) {
 
   const branches = result?.parallel_branches ?? []
   const ranked = result?.ranked_directions ?? []
+  const msgs = runningMessages(parallelism)
+  const statusLine = msgs[runTick % msgs.length]
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -86,9 +114,49 @@ export default function WarRoomTab({ ticker }: Props) {
               : 'bg-accent text-canvas hover:bg-[#79b8ff]',
           ].join(' ')}
         >
-          {running ? 'Running parallel diligence…' : result ? `Re-run — $${ticker}` : `Run War Room — $${ticker}`}
+          {running ? 'Running…' : result ? `Re-run — $${ticker}` : `Run War Room — $${ticker}`}
         </button>
       </div>
+
+      {/* Live run animation */}
+      {running && (
+        <div
+          className="relative overflow-hidden rounded-lg border border-accent/40 bg-canvas/80 p-6 animate-war-glow"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(88,166,255,0.12),transparent_55%)]" />
+          <div className="relative">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex gap-1">
+                {[0, 1, 2].map(i => (
+                  <span
+                    key={i}
+                    className="h-2 w-2 rounded-full bg-accent animate-bounce"
+                    style={{ animationDelay: `${i * 140}ms` }}
+                  />
+                ))}
+              </div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">
+                War room active
+              </span>
+            </div>
+            <p
+              key={runTick}
+              className="text-sm text-[#e6edf3] leading-relaxed min-h-[3rem] font-mono transition-opacity duration-300"
+            >
+              {statusLine}
+            </p>
+            <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-border">
+              <div className="h-full w-[28%] rounded-full bg-gradient-to-r from-accent/20 via-accent to-accent/60 animate-war-bar" />
+            </div>
+            <p className="mt-3 text-[10px] text-muted flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-positive animate-war-blink" />
+              Models may take 30–90s — status cycles while you wait.
+            </p>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="bg-negative/10 border border-negative/30 rounded-lg p-5 text-sm">
@@ -100,13 +168,21 @@ export default function WarRoomTab({ ticker }: Props) {
 
       {result && (
         <>
-          {result.steps.map(step => (
-            <div key={step.step} className="bg-surface border border-border rounded-lg p-5">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted">{step.step}</span>
-              <p className="text-sm text-[#c9d1d9] leading-relaxed mt-2">{step.output}</p>
+          {/* 1 — Synthesis first (most important) */}
+          {result.synthesis && (
+            <div className="bg-surface border border-accent/50 rounded-lg p-6 shadow-[0_0_0_1px_rgba(88,166,255,0.08)]">
+              <div className="flex items-center gap-2 mb-5">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-accent">Primary</span>
+                <h3 className="text-sm font-semibold text-[#e6edf3]">Synthesis report</h3>
+                <span className="text-[10px] text-muted border border-border rounded px-1.5 py-0.5 ml-auto">
+                  AI-generated · Not financial advice
+                </span>
+              </div>
+              <BullBearMatrix synthesis={result.synthesis} ticker={ticker} />
             </div>
-          ))}
+          )}
 
+          {/* 2 — Ranked directions */}
           {ranked.length > 0 && (
             <div className="bg-surface border border-border rounded-lg p-6">
               <h3 className="text-sm font-semibold text-[#e6edf3] mb-4">Ranked directions</h3>
@@ -128,9 +204,18 @@ export default function WarRoomTab({ ticker }: Props) {
             </div>
           )}
 
+          {/* 3 — Pipeline summary */}
+          {result.steps.map(step => (
+            <div key={step.step} className="bg-surface border border-border rounded-lg p-5">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted">{step.step}</span>
+              <p className="text-sm text-[#c9d1d9] leading-relaxed mt-2">{step.output}</p>
+            </div>
+          ))}
+
+          {/* 4 — Branch trace (detail) */}
           {branches.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-[#e6edf3] mb-3">Branch trace</h3>
+              <h3 className="text-xs font-semibold text-muted mb-3">Branch trace</h3>
               <div className="space-y-3">
                 {branches.map((b, i) => (
                   <div key={i} className="bg-surface border border-border rounded-lg overflow-hidden">
@@ -154,18 +239,6 @@ export default function WarRoomTab({ ticker }: Props) {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {result.synthesis && (
-            <div className="bg-surface border border-border rounded-lg p-6">
-              <div className="flex items-center gap-2 mb-5">
-                <h3 className="text-sm font-semibold text-[#e6edf3]">Synthesis report</h3>
-                <span className="text-[10px] text-muted border border-border rounded px-1.5 py-0.5 ml-auto">
-                  AI-generated · Not financial advice
-                </span>
-              </div>
-              <BullBearMatrix synthesis={result.synthesis} ticker={ticker} />
             </div>
           )}
         </>

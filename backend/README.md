@@ -16,8 +16,11 @@ Interactive docs: http://localhost:8000/docs
 | GET | `/health` | Health check |
 | GET | `/api/peers/{ticker}` | pgvector cosine-similarity peer search + clinical metrics |
 | GET | `/api/diligence/{ticker}` | Parallel War Room — explorer/critic branches per ticker + synthesis (query `parallelism=1–5`, default 3) |
+| GET | `/api/prices/{ticker}` | Daily adjusted closes from **Yahoo Finance** via [yfinance](https://github.com/ranaroussi/yfinance) (query `period`: `3mo` … `max`, default `2y`) |
 
 Valid tickers: `DYNE`, `RNA`, `SRPT`, `WVE`
+
+**Prices:** `RNA` maps to Yahoo symbol **`AVDL`** (Avidity Biosciences). Data is unofficial / scraped; rate-limit friendly use only.
 
 Uses mechanism text, `clinical_metrics`, and pgvector peers from the same DB as `/api/peers`.
 

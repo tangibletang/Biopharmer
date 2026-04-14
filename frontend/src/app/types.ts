@@ -59,6 +59,17 @@ export interface StockPoint {
   price: number
 }
 
+/** GET /api/prices/{ticker} */
+export interface PricesResponse {
+  ticker: string
+  yahoo_symbol: string
+  source: string
+  interval: string
+  period: string
+  currency: string | null
+  prices: StockPoint[]
+}
+
 export interface Milestone {
   date: string
   label: string

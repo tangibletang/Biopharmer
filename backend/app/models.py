@@ -59,3 +59,20 @@ class DiligenceResponse(BaseModel):
     parallel_branches: list[ParallelBranch] = Field(default_factory=list)
     ranked_directions: list[RankedDirectionItem] = Field(default_factory=list)
     synthesis_note: str | None = None
+
+
+# ── /api/prices/{ticker} (Yahoo Finance via yfinance) ───────────────────────
+
+class StockPricePoint(BaseModel):
+    date: str
+    price: float
+
+
+class PricesResponse(BaseModel):
+    ticker: str
+    yahoo_symbol: str
+    source: str
+    interval: str
+    period: str
+    currency: str | None = None
+    prices: list[StockPricePoint]

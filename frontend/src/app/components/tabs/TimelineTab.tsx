@@ -1,15 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from 'recharts'
-import type { Ticker, Milestone } from '../../types'
+import type { Ticker, Milestone, PricesResponse } from '../../types'
 import { TICKER_DATA } from '../../mockData'
 import MilestoneModal from '../MilestoneModal'
 
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+
 type Filter = 'all' | 'historical' | 'projected'
+
+/** Map each historical milestone to the closest trading date in the price series (for daily Yahoo data). */
+function milestoneMapForSeries(historical: Milestone[], seriesDates: string[]): Map<string, Milestone> {
+  const out = new Map<string, Milestone>()
+  if (!seriesDates.length) return out
+  const sorted = [...seriesDates]
+  for (const ms of historical) {
+    const t = new Date(`${ms.date}T12:00:00`).getTime()
+    let best: string | null = null
+    let bestD = Infinity
+    for (const d of sorted) {
+      const dt = Math.abs(new Date(`${d}T12:00:00`).getTime() - t)
+      if (dt < bestD) {
+        bestD = dt
+        best = d
+      }
+    }
+    if (best != null && bestD <= 6 * 86400000) out.set(best, ms)
+  }
+  return out
+}
 
 // ── Timeline geometry ──────────────────────────────────────────────────────
 const TW    = 2900   // total SVG / scroll width
@@ -20,14 +43,20 @@ const DR    = 7      // dot radius
 const CH    = 52     // connector height
 const CW    = 152    // card width
 const CARD_H = 112   // card height
-const NOW   = '2026-04-14'
 
 const T_START = new Date('2024-01-01')
 const T_END   = new Date('2028-01-01')
 const T_SPAN  = (T_END.getTime() - T_START.getTime()) / 86400000
 
+function localDateISO(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 function dx(dateStr: string): number {
-  const days = (new Date(dateStr).getTime() - T_START.getTime()) / 86400000
+  const days = (new Date(dateStr + 'T12:00:00').getTime() - T_START.getTime()) / 86400000
   return PAD + (days / T_SPAN) * (TW - PAD * 2)
 }
 
@@ -78,21 +107,83 @@ function ChartTip({ active, payload, mmap }: {
 export default function TimelineTab({ ticker }: { ticker: Ticker }) {
   const [filter, setFilter]   = useState<Filter>('all')
   const [selected, setSelected] = useState<Milestone | null>(null)
+  const [yahooPrices, setYahooPrices] = useState<PricesResponse | null>(null)
+  const [pricesLoading, setPricesLoading] = useState(false)
+  const [pricesError, setPricesError] = useState<string | null>(null)
+  const timelineScrollRef = useRef<HTMLDivElement>(null)
+  /** Set on client only so SSR/hydration match and “today” is real local time */
+  const [todayStr, setTodayStr] = useState<string | null>(null)
+
+  useEffect(() => {
+    setTodayStr(localDateISO(new Date()))
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    setPricesLoading(true)
+    setPricesError(null)
+    setYahooPrices(null)
+    fetch(`${API}/api/prices/${ticker}?period=2y`)
+      .then(async res => {
+        if (!res.ok) {
+          const t = await res.text()
+          throw new Error(t || `${res.status}`)
+        }
+        return res.json() as Promise<PricesResponse>
+      })
+      .then(data => {
+        if (!cancelled && data.prices?.length) setYahooPrices(data)
+      })
+      .catch(e => {
+        if (!cancelled) setPricesError(String(e))
+      })
+      .finally(() => {
+        if (!cancelled) setPricesLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [ticker])
+
+  const todayLegend = useMemo(() => {
+    const d = new Date()
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    return `${months[d.getMonth()]} ${d.getFullYear()}`
+  }, [])
+
+  const todayX = todayStr ? dx(todayStr) : null
+
+  useLayoutEffect(() => {
+    if (todayX == null) return
+    const el = timelineScrollRef.current
+    if (!el) return
+    const centerToday = () => {
+      const cw = el.clientWidth
+      const max = Math.max(0, el.scrollWidth - cw)
+      const next = Math.max(0, Math.min(todayX - cw / 2, max))
+      el.scrollLeft = next
+    }
+    centerToday()
+    requestAnimationFrame(centerToday)
+  }, [ticker, todayX])
 
   const data       = TICKER_DATA[ticker]
   const historical = data.milestones.filter(m => m.category === 'historical')
   const projected  = data.milestones.filter(m => m.category === 'projected')
-  const mmap       = new Map(historical.map(m => [m.date, m]))
 
-  const priceMin = Math.min(...data.prices.map(p => p.price))
-  const priceMax = Math.max(...data.prices.map(p => p.price))
-  const ppad     = (priceMax - priceMin) * 0.08
+  const chartPrices = yahooPrices?.prices?.length ? yahooPrices.prices : data.prices
+  const seriesDates = chartPrices.map(p => p.date)
+  const mmap = yahooPrices?.prices?.length
+    ? milestoneMapForSeries(historical, seriesDates)
+    : new Map(historical.map(m => [m.date, m]))
+
+  const priceMin = chartPrices.length ? Math.min(...chartPrices.map(p => p.price)) : 0
+  const priceMax = chartPrices.length ? Math.max(...chartPrices.map(p => p.price)) : 1
+  const ppad     = Math.max((priceMax - priceMin) * 0.08, 0.01)
 
   function opa(cat: 'historical' | 'projected') {
     return filter === 'all' || filter === cat ? 1 : 0.18
   }
-
-  const nowX = dx(NOW)
 
   return (
     <div className="space-y-4">
@@ -119,13 +210,17 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
         </div>
         <div className="flex items-center gap-4 text-[10px] text-muted">
           <span>{historical.length} historical · {projected.length} projected</span>
-          <span className="text-accent">↔ scroll to explore</span>
+          <span className="text-accent">↔ scroll · opens centered on today</span>
         </div>
       </div>
 
       {/* ── Horizontal timeline ───────────────────────────────────────── */}
       <div className="bg-surface border border-border rounded-lg p-4">
-        <div className="overflow-x-auto overflow-y-hidden" style={{ cursor: 'grab' }}>
+        <div
+          ref={timelineScrollRef}
+          className="overflow-x-auto overflow-y-hidden scroll-smooth"
+          style={{ cursor: 'grab' }}
+        >
           <div style={{ width: TW, height: SH, position: 'relative', flexShrink: 0 }}>
 
             {/* ── SVG: spine, dots, connectors ── */}
@@ -160,21 +255,25 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
               {/* End tick */}
               <line x1={dx('2028-01-01')} y1={SY - 6} x2={dx('2028-01-01')} y2={SY + 6} stroke="#484f58" strokeWidth={1} />
 
-              {/* NOW line */}
-              <line
-                x1={nowX} y1={SY - 80} x2={nowX} y2={SY + 80}
-                stroke="#58a6ff" strokeWidth={1.5}
-                strokeDasharray="5 3" strokeOpacity={0.55}
-              />
-              <rect x={nowX - 20} y={SY - 97} width={40} height={18} rx={4} fill="#58a6ff" fillOpacity={0.12} />
-              <text
-                x={nowX} y={SY - 84}
-                textAnchor="middle" fill="#58a6ff"
-                fontSize={9} fontFamily="ui-monospace,monospace" fontWeight="700"
-                letterSpacing="1"
-              >
-                TODAY
-              </text>
+              {/* NOW line — only after client date is known */}
+              {todayX != null && (
+                <g>
+                  <line
+                    x1={todayX} y1={SY - 80} x2={todayX} y2={SY + 80}
+                    stroke="#58a6ff" strokeWidth={1.5}
+                    strokeDasharray="5 3" strokeOpacity={0.55}
+                  />
+                  <rect x={todayX - 20} y={SY - 97} width={40} height={18} rx={4} fill="#58a6ff" fillOpacity={0.12} />
+                  <text
+                    x={todayX} y={SY - 84}
+                    textAnchor="middle" fill="#58a6ff"
+                    fontSize={9} fontFamily="ui-monospace,monospace" fontWeight="700"
+                    letterSpacing="1"
+                  >
+                    TODAY
+                  </text>
+                </g>
+              )}
 
               {/* Historical connectors + dots (above spine) */}
               {historical.map((m, i) => {
@@ -278,7 +377,7 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
             Projected (est.)
           </span>
           <span className="flex items-center gap-1.5 ml-auto text-accent">
-            <span className="w-0.5 h-3 bg-accent opacity-60 inline-block" />TODAY · Apr 2026
+            <span className="w-0.5 h-3 bg-accent opacity-60 inline-block" />TODAY · {todayLegend}
           </span>
         </div>
       </div>
@@ -286,12 +385,28 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
       {/* ── Price chart (historical context) ──────────────────────────── */}
       {(filter === 'all' || filter === 'historical') && (
         <div className="bg-surface border border-border rounded-lg p-5">
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-sm font-semibold text-[#e6edf3]">${ticker} — Weekly Close (Jan 2024 – Apr 2026, real market data)</h2>
-            <span className="text-xs text-muted">Click dots to view catalysts</span>
+          <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
+            <div>
+              <h2 className="text-sm font-semibold text-[#e6edf3]">
+                ${ticker} —{' '}
+                {yahooPrices
+                  ? `Daily close (${yahooPrices.yahoo_symbol} · Yahoo Finance · ${yahooPrices.period})`
+                  : 'Price history (embedded weekly sample)'}
+              </h2>
+              {yahooPrices?.currency && (
+                <p className="text-[10px] text-muted mt-0.5">Currency: {yahooPrices.currency} · {chartPrices.length} trading days</p>
+              )}
+              {pricesLoading && (
+                <p className="text-[10px] text-accent mt-1 animate-pulse">Loading live prices from Yahoo…</p>
+              )}
+              {pricesError && !yahooPrices && (
+                <p className="text-[10px] text-muted mt-1">Live prices unavailable ({pricesError.slice(0, 80)}…); showing embedded data.</p>
+              )}
+            </div>
+            <span className="text-xs text-muted shrink-0">Click dots to view catalysts</span>
           </div>
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data.prices} margin={{ top: 10, right: 20, bottom: 0, left: 10 }}>
+            <LineChart data={chartPrices} margin={{ top: 10, right: 20, bottom: 0, left: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#21262d" vertical={false} />
               <XAxis
                 dataKey="date" tickLine={false} axisLine={false}
@@ -301,7 +416,7 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
                   const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo - 1]
                   return mo === '01' ? `${month} '${yr.slice(2)}` : month
                 }}
-                interval={3}
+                minTickGap={28}
               />
               <YAxis
                 domain={[priceMin - ppad, priceMax + ppad]}

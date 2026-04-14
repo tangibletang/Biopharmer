@@ -49,7 +49,7 @@ export const TICKER_COLORS: Record<Ticker, string> = {
   WVE:  '#ffa657',
 }
 
-// ── Real weekly price data (Yahoo Finance, Jan 2024 → Apr 2026) ────────────
+// ── Embedded weekly sample (offline fallback; Timeline uses GET /api/prices live when API is up) ──
 
 const DYNE_PRICES: StockPoint[] = [
   { date: '2024-01-01', price: 17.96 }, { date: '2024-01-08', price: 16.69 },
