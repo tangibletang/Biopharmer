@@ -12,7 +12,7 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import peers, diligence, prices
+from app.routers import peers, diligence, prices, milestone
 
 app = FastAPI(
     title="Biopharmer API",
@@ -39,9 +39,10 @@ app.add_middleware(
 )
 
 # ── Routers ─────────────────────────────────────────────────────────────────
-app.include_router(peers.router,     prefix="/api", tags=["peers"])
-app.include_router(diligence.router, prefix="/api", tags=["diligence"])
-app.include_router(prices.router,   prefix="/api", tags=["prices"])
+app.include_router(peers.router,      prefix="/api", tags=["peers"])
+app.include_router(diligence.router,  prefix="/api", tags=["diligence"])
+app.include_router(prices.router,     prefix="/api", tags=["prices"])
+app.include_router(milestone.router,  prefix="/api", tags=["milestone"])
 
 
 # ── Health check ─────────────────────────────────────────────────────────────

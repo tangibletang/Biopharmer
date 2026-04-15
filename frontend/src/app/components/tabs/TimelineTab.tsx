@@ -480,7 +480,7 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
         </div>
       )}
 
-      {selected && <MilestoneModal milestone={selected} onClose={() => setSelected(null)} />}
+      {selected && <MilestoneModal milestone={selected} ticker={ticker} onClose={() => setSelected(null)} />}
     </div>
   )
 }

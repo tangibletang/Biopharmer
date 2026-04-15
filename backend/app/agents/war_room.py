@@ -1,8 +1,9 @@
 """
-Legacy LangGraph War Room (linear biologist → toxicologist → synthesizer).
+Legacy linear War Room (biologist → toxicologist → synthesizer).
 
-**Production diligence** uses `app.agents.ticker_war_room` (parallel explorers/critics + merger)
-behind `GET /api/diligence/{ticker}`. This module remains for `search_scientific_peers` and reference.
+**Production diligence** uses `app.agents.iterative_war_room` (LangGraph StateGraph with
+human-in-the-loop) behind `POST /api/diligence/start` and `POST /api/diligence/resume`.
+This module is kept for `search_scientific_peers` (used by iterative_war_room) and reference.
 """
 
 from __future__ import annotations

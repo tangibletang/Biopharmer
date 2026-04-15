@@ -1,19 +1,23 @@
 """
-GET /api/diligence/{ticker}
+Iterative War Room endpoints.
 
-Parallel investment War Room: mechanism + clinical + peers → N explorer branches,
-each critiqued, then merged into bull/bear + ranked directions.
+POST /api/diligence/start   — Start a new debate thread
+POST /api/diligence/resume  — Resume a paused thread with a human directive
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from __future__ import annotations
 
-from app.agents.ticker_war_room import run_ticker_war_room
+import uuid
+
+from fastapi import APIRouter, HTTPException
+
+from app.agents.iterative_war_room import USER_PERSONAS, resume_war_room, start_war_room
 from app.models import (
-    DiligenceResponse,
-    DiligenceStep,
-    ParallelBranch,
-    RankedDirectionItem,
     SynthesisOutput,
+    TranscriptMessage,
+    WarRoomResponse,
+    WarRoomResumeRequest,
+    WarRoomStartRequest,
 )
 
 router = APIRouter()
@@ -21,61 +25,81 @@ router = APIRouter()
 VALID_TICKERS = {"DYNE", "RNA", "SRPT", "WVE"}
 
 
-@router.get("/diligence/{ticker}", response_model=DiligenceResponse)
-async def get_diligence(
-    ticker: str,
-    parallelism: int = Query(3, ge=1, le=5, description="Number of parallel explorer–critic branches"),
-):
-    ticker = ticker.upper()
+def _coerce_response(raw: dict) -> WarRoomResponse:
+    """Convert the raw state dict from the graph into a validated response model."""
+    synthesis = None
+    if raw.get("synthesis"):
+        s = raw["synthesis"]
+        synthesis = SynthesisOutput(
+            research_summary=str(s.get("research_summary", "")),
+            key_findings=s.get("key_findings") if isinstance(s.get("key_findings"), list) else [],
+            investor_considerations=s.get("investor_considerations") if isinstance(s.get("investor_considerations"), list) else [],
+            watch_list=str(s.get("watch_list", "")),
+        )
 
+    transcript = [
+        TranscriptMessage(
+            role=m.get("role", ""),
+            agent=m.get("agent", ""),
+            content=m.get("content", ""),
+            iteration=m.get("iteration", 0),
+        )
+        for m in raw.get("transcript", [])
+    ]
+
+    return WarRoomResponse(
+        thread_id=raw["thread_id"],
+        status=raw["status"],
+        ticker=raw["ticker"],
+        iterations_completed=raw["iterations_completed"],
+        max_iterations=raw["max_iterations"],
+        transcript=transcript,
+        suggested_directions=raw.get("suggested_directions", []),
+        interim_summary=raw.get("interim_summary", ""),
+        synthesis=synthesis,
+    )
+
+
+@router.get("/diligence/personas")
+async def get_personas():
+    """Return the available user personas for the war room."""
+    return {"personas": USER_PERSONAS}
+
+
+@router.post("/diligence/start", response_model=WarRoomResponse)
+async def start_diligence(body: WarRoomStartRequest):
+    ticker = body.ticker.upper()
     if ticker not in VALID_TICKERS:
         raise HTTPException(
             status_code=404,
-            detail=f"Ticker '{ticker}' not in DMD micro-universe. Valid tickers: {sorted(VALID_TICKERS)}",
+            detail=f"Ticker '{ticker}' not in DMD micro-universe. Valid: {sorted(VALID_TICKERS)}",
         )
 
-    result = await run_ticker_war_room(ticker, parallelism=parallelism)
-    merged = result["merged"]
-    branches_raw = result["parallel_branches"]
-
-    synthesis = SynthesisOutput(
-        bull_case=str(merged.get("bull_case", "")),
-        bear_case=str(merged.get("bear_case", "")),
-        actionable_metric=str(merged.get("actionable_metric", "")),
-    )
-
-    ranked_raw = merged.get("ranked_directions") or []
-    ranked: list[RankedDirectionItem] = []
-    for i, r in enumerate(ranked_raw):
-        if not isinstance(r, dict):
-            continue
-        ranked.append(
-            RankedDirectionItem(
-                rank=int(r.get("rank", i + 1)),
-                title=str(r.get("title", "")),
-                rationale=str(r.get("rationale", "")),
-                key_risks=str(r.get("key_risks", "")),
-                next_step=str(r.get("next_step", "")),
-            )
+    thread_id = str(uuid.uuid4())
+    try:
+        raw = await start_war_room(
+            ticker=ticker,
+            user_focus=body.user_focus,
+            thread_id=thread_id,
+            user_persona=body.user_persona,
+            max_iterations=body.max_iterations,
         )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    steps = [
-        DiligenceStep(
-            step="parallel_war_room",
-            status="complete",
-            output=(
-                f"Parallel stock diligence for ${ticker}: {len(branches_raw)} investment angles "
-                "with explorer → critic rounds, grounded in your mechanism text, clinical metrics, "
-                "and pgvector peer matches."
-            ),
-        ),
-    ]
+    return _coerce_response(raw)
 
-    return DiligenceResponse(
-        ticker=ticker,
-        steps=steps,
-        synthesis=synthesis,
-        parallel_branches=[ParallelBranch(**b) for b in branches_raw],
-        ranked_directions=ranked,
-        synthesis_note=merged.get("synthesis_note") if isinstance(merged.get("synthesis_note"), str) else None,
-    )
+
+@router.post("/diligence/resume", response_model=WarRoomResponse)
+async def resume_diligence(body: WarRoomResumeRequest):
+    if not body.thread_id:
+        raise HTTPException(status_code=400, detail="thread_id is required.")
+    try:
+        raw = await resume_war_room(
+            thread_id=body.thread_id,
+            human_directive=body.human_directive,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return _coerce_response(raw)

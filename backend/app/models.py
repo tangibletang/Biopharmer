@@ -24,41 +24,44 @@ class PeersResponse(BaseModel):
     peers: list[PeerResult]
 
 
-# ── /api/diligence/{ticker} ────────────────────────────────────────────────
+# ── /api/diligence — Iterative War Room ───────────────────────────────────────
 
-class DiligenceStep(BaseModel):
-    step: str
-    status: str                # "complete"
-    output: str                # human-readable summary for this step
+class WarRoomStartRequest(BaseModel):
+    ticker: str
+    user_focus: str
+    user_persona: str = "Clinical Mechanism Analyst"
+    max_iterations: int = Field(default=2, ge=1, le=5)
+
+
+class WarRoomResumeRequest(BaseModel):
+    thread_id: str
+    human_directive: str = ""
+
+
+class TranscriptMessage(BaseModel):
+    role: str          # orchestrator | explorer | critic
+    agent: str
+    content: str
+    iteration: int = 0
 
 
 class SynthesisOutput(BaseModel):
-    bull_case: str
-    bear_case: str
-    actionable_metric: str
+    research_summary: str
+    key_findings: list[str] = Field(default_factory=list)
+    investor_considerations: list[str] = Field(default_factory=list)
+    watch_list: str
 
 
-class ParallelBranch(BaseModel):
-    label: str
-    explorer: str
-    critic: str
-
-
-class RankedDirectionItem(BaseModel):
-    rank: int = 0
-    title: str = ""
-    rationale: str = ""
-    key_risks: str = ""
-    next_step: str = ""
-
-
-class DiligenceResponse(BaseModel):
+class WarRoomResponse(BaseModel):
+    thread_id: str
+    status: str                              # "paused" | "complete"
     ticker: str
-    steps: list[DiligenceStep]
-    synthesis: SynthesisOutput
-    parallel_branches: list[ParallelBranch] = Field(default_factory=list)
-    ranked_directions: list[RankedDirectionItem] = Field(default_factory=list)
-    synthesis_note: str | None = None
+    iterations_completed: int
+    max_iterations: int
+    transcript: list[TranscriptMessage] = Field(default_factory=list)
+    suggested_directions: list[str] = Field(default_factory=list)
+    interim_summary: str = ""
+    synthesis: SynthesisOutput | None = None
 
 
 # ── /api/prices/{ticker} (Alpha Vantage preferred, else Yahoo via yfinance) ─

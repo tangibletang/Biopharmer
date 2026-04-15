@@ -7,9 +7,10 @@ import { ALL_TICKERS, COMPANY_NAMES, TICKER_COLORS, CLINICAL_DATA } from '../moc
 interface Props {
   selected: Ticker
   onSelect: (t: Ticker) => void
+  catalysts?: Partial<Record<Ticker, string>>
 }
 
-export default function Sidebar({ selected, onSelect }: Props) {
+export default function Sidebar({ selected, onSelect, catalysts = {} }: Props) {
   return (
     <aside className="w-56 shrink-0 flex flex-col border-r border-border bg-surface overflow-y-auto">
       {/* Logo */}
@@ -59,6 +60,15 @@ export default function Sidebar({ selected, onSelect }: Props) {
                   <Metric label="Emax" value={`${clinical.emax_pct}%`} color="text-positive" />
                   <Metric label="t½"   value={`${clinical.half_life_days}d`} color="text-accent" />
                   <Metric label="AE3+"  value={`${clinical.grade_3_ae_pct}%`} color="text-negative" />
+                </div>
+              )}
+
+              {/* AI catalyst one-liner — shown for all tickers once research has run */}
+              {catalysts[t] && (
+                <div className="mt-2 pl-3.5">
+                  <p className="text-[10px] text-accent/80 leading-snug line-clamp-2">
+                    → {catalysts[t]}
+                  </p>
                 </div>
               )}
             </button>

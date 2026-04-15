@@ -24,39 +24,44 @@ export interface PeersResponse {
   peers: PeerResult[]
 }
 
-export interface DiligenceStep {
-  step: string
-  status: string
-  output: string
+// ── Iterative War Room ────────────────────────────────────────────────────────
+
+export interface WarRoomStartRequest {
+  ticker: string
+  user_focus: string
+  user_persona: string
+  max_iterations: number
+}
+
+export interface WarRoomResumeRequest {
+  thread_id: string
+  human_directive: string
+}
+
+export interface TranscriptMessage {
+  role: 'orchestrator' | 'explorer' | 'critic'
+  agent: string
+  content: string
+  iteration: number
 }
 
 export interface SynthesisOutput {
-  bull_case: string
-  bear_case: string
-  actionable_metric: string
+  research_summary: string
+  key_findings: string[]
+  investor_considerations: string[]
+  watch_list: string
 }
 
-export interface ParallelBranch {
-  label: string
-  explorer: string
-  critic: string
-}
-
-export interface RankedDirectionItem {
-  rank: number
-  title: string
-  rationale: string
-  key_risks: string
-  next_step: string
-}
-
-export interface DiligenceResponse {
+export interface WarRoomResponse {
+  thread_id: string
+  status: 'paused' | 'complete'
   ticker: string
-  steps: DiligenceStep[]
-  synthesis: SynthesisOutput
-  parallel_branches: ParallelBranch[]
-  ranked_directions: RankedDirectionItem[]
-  synthesis_note: string | null
+  iterations_completed: number
+  max_iterations: number
+  transcript: TranscriptMessage[]
+  suggested_directions: string[]
+  interim_summary: string
+  synthesis: SynthesisOutput | null
 }
 
 export interface StockPoint {
