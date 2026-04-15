@@ -63,6 +63,8 @@ export interface StockPoint {
 export interface PricesResponse {
   ticker: string
   yahoo_symbol: string
+  /** alpha_vantage | yahoo_finance */
+  provider: string
   source: string
   interval: string
   period: string

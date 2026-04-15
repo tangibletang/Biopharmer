@@ -16,11 +16,11 @@ Interactive docs: http://localhost:8000/docs
 | GET | `/health` | Health check |
 | GET | `/api/peers/{ticker}` | pgvector cosine-similarity peer search + clinical metrics |
 | GET | `/api/diligence/{ticker}` | Parallel War Room — explorer/critic branches per ticker + synthesis (query `parallelism=1–5`, default 3) |
-| GET | `/api/prices/{ticker}` | Daily adjusted closes from **Yahoo Finance** via [yfinance](https://github.com/ranaroussi/yfinance) (query `period`: `3mo` … `max`, default `2y`) |
+| GET | `/api/prices/{ticker}` | Daily adjusted closes: **Alpha Vantage** when `ALPHA_VANTAGE_API_KEY` is set, otherwise **Yahoo Finance** via [yfinance](https://github.com/ranaroussi/yfinance) (query `period`: `3mo` … `max`, default `2y`; response includes `provider`) |
 
 Valid tickers: `DYNE`, `RNA`, `SRPT`, `WVE`
 
-**Prices:** `RNA` maps to Yahoo symbol **`AVDL`** (Avidity Biosciences). Data is unofficial / scraped; rate-limit friendly use only.
+**Prices:** `RNA` maps to listing symbol **`AVDL`** (Avidity Biosciences). A free Alpha Vantage key only gets **~100 trading days** (`TIME_SERIES_DAILY` compact) and **premium-only** endpoints (e.g. adjusted daily, `outputsize=full`) are not used — for **`2y`** (default), **`5y`**, **`max`**, etc., the API uses Yahoo. On error, rate limits, or missing key, Yahoo is used (unofficial; use lightly).
 
 Uses mechanism text, `clinical_metrics`, and pgvector peers from the same DB as `/api/peers`.
 

@@ -5,6 +5,10 @@ Run with:
     uvicorn app.main:app --reload --port 8000
 """
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -25,6 +29,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
     ],
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,

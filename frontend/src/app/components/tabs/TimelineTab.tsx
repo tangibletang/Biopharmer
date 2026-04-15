@@ -11,9 +11,12 @@ import MilestoneModal from '../MilestoneModal'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
+/** Two years of daily closes; backend serves Yahoo for this window (free Alpha Vantage is too short). */
+const LIVE_PRICE_PERIOD = '2y' as const
+
 type Filter = 'all' | 'historical' | 'projected'
 
-/** Map each historical milestone to the closest trading date in the price series (for daily Yahoo data). */
+/** Map each historical milestone to the closest trading date in the daily price series. */
 function milestoneMapForSeries(historical: Milestone[], seriesDates: string[]): Map<string, Milestone> {
   const out = new Map<string, Milestone>()
   if (!seriesDates.length) return out
@@ -65,6 +68,11 @@ const TYPE_COLOR = {
   negative: '#f85149',
   neutral:  '#58a6ff',
 } as const
+
+function priceProviderLabel(provider: string | undefined): string {
+  if (provider === 'alpha_vantage') return 'Alpha Vantage'
+  return 'Yahoo Finance'
+}
 
 // ── Chart helpers ──────────────────────────────────────────────────────────
 function MilestoneDot(props: {
@@ -123,7 +131,7 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
     setPricesLoading(true)
     setPricesError(null)
     setYahooPrices(null)
-    fetch(`${API}/api/prices/${ticker}?period=2y`)
+    fetch(`${API}/api/prices/${ticker}?period=${LIVE_PRICE_PERIOD}`)
       .then(async res => {
         if (!res.ok) {
           const t = await res.text()
@@ -390,14 +398,14 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
               <h2 className="text-sm font-semibold text-[#e6edf3]">
                 ${ticker} —{' '}
                 {yahooPrices
-                  ? `Daily close (${yahooPrices.yahoo_symbol} · Yahoo Finance · ${yahooPrices.period})`
+                  ? `Daily close (${yahooPrices.yahoo_symbol} · ${priceProviderLabel(yahooPrices.provider)} · ${yahooPrices.period})`
                   : 'Price history (embedded weekly sample)'}
               </h2>
               {yahooPrices?.currency && (
                 <p className="text-[10px] text-muted mt-0.5">Currency: {yahooPrices.currency} · {chartPrices.length} trading days</p>
               )}
               {pricesLoading && (
-                <p className="text-[10px] text-accent mt-1 animate-pulse">Loading live prices from Yahoo…</p>
+                <p className="text-[10px] text-accent mt-1 animate-pulse">Loading live prices…</p>
               )}
               {pricesError && !yahooPrices && (
                 <p className="text-[10px] text-muted mt-1">Live prices unavailable ({pricesError.slice(0, 80)}…); showing embedded data.</p>

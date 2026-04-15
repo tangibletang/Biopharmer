@@ -61,7 +61,7 @@ class DiligenceResponse(BaseModel):
     synthesis_note: str | None = None
 
 
-# ── /api/prices/{ticker} (Yahoo Finance via yfinance) ───────────────────────
+# ── /api/prices/{ticker} (Alpha Vantage preferred, else Yahoo via yfinance) ─
 
 class StockPricePoint(BaseModel):
     date: str
@@ -70,7 +70,12 @@ class StockPricePoint(BaseModel):
 
 class PricesResponse(BaseModel):
     ticker: str
-    yahoo_symbol: str
+    yahoo_symbol: str = Field(
+        description="Listing symbol passed to the provider (e.g. RNA → AVDL).",
+    )
+    provider: str = Field(
+        description="Which backend filled the series: alpha_vantage or yahoo_finance.",
+    )
     source: str
     interval: str
     period: str
