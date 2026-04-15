@@ -12,7 +12,7 @@ type Tab = 'timeline' | 'proximity' | 'research'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'timeline',  label: 'Timeline' },
-  { id: 'proximity', label: 'Proximity Map' },
+  { id: 'proximity', label: 'Competitive Timeline Overview' },
   { id: 'research',  label: 'The Research Pharm' },
 ]
 

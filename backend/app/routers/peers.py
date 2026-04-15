@@ -52,7 +52,10 @@ async def get_peers(ticker: str):
             c.emax_pct,
             c.half_life_days,
             c.grade_3_ae_pct,
-            c.audit_text
+            c.audit_text,
+            c.approval_stage,
+            c.mechanism_class,
+            c.eligible_patient_pct
         FROM   dmd_mechanisms m
         JOIN   clinical_metrics c ON c.ticker = m.ticker
         CROSS  JOIN base
@@ -72,7 +75,10 @@ async def get_peers(ticker: str):
                 emax_pct=float(r["emax_pct"]),
                 half_life_days=float(r["half_life_days"]),
                 grade_3_ae_pct=float(r["grade_3_ae_pct"]),
-                audit_text=r["audit_text"],
+                audit_text=r["audit_text"] or "",
+                approval_stage=r["approval_stage"] or "",
+                mechanism_class=r["mechanism_class"] or "",
+                eligible_patient_pct=float(r["eligible_patient_pct"] or 0),
             ),
         )
         for r in rows

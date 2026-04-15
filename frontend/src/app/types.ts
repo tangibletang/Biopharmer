@@ -10,6 +10,9 @@ export interface ClinicalSnapshot {
   half_life_days: number
   grade_3_ae_pct: number
   audit_text: string
+  approval_stage: string        // Phase 2 | BLA Pending | Pre-BLA | Approved
+  mechanism_class: string       // ASO | AOC | Gene Therapy
+  eligible_patient_pct: number  // % of DMD patients eligible
 }
 
 export interface PeerResult {
@@ -96,4 +99,29 @@ export interface TickerMeta {
   color: string
   prices: StockPoint[]
   milestones: Milestone[]
+}
+
+// ── /api/universe ─────────────────────────────────────────────────────────────
+
+export interface UniverseTicker {
+  ticker: string
+  company_name: string
+  clinical: ClinicalSnapshot
+}
+
+export interface UniverseResponse {
+  tickers: UniverseTicker[]
+}
+
+// ── /api/compare ──────────────────────────────────────────────────────────────
+
+export interface CompareRequest {
+  base_ticker: string
+  compare_ticker: string
+}
+
+export interface CompareResponse {
+  headline: string
+  key_differences: string[]
+  investment_angle: string
 }

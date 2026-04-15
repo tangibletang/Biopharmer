@@ -23,14 +23,22 @@ create index if not exists dmd_mechanisms_embedding_idx
 
 -- 3. Clinical metrics table (1-to-1 with dmd_mechanisms)
 create table if not exists clinical_metrics (
-    id              bigserial primary key,
-    ticker          text      not null references dmd_mechanisms(ticker) on delete cascade,
-    emax_pct        numeric(5,2),   -- peak dystrophin restoration (% of normal)
-    half_life_days  numeric(6,2),   -- serum/tissue half-life in days
-    grade_3_ae_pct  numeric(5,2),   -- rate of Grade ≥3 adverse events (%)
-    audit_text      text,
+    id                   bigserial primary key,
+    ticker               text      not null references dmd_mechanisms(ticker) on delete cascade,
+    emax_pct             numeric(5,2),   -- peak dystrophin restoration (% of normal)
+    half_life_days       numeric(6,2),   -- serum/tissue half-life in days
+    grade_3_ae_pct       numeric(5,2),   -- rate of Grade ≥3 adverse events (%)
+    audit_text           text,
+    approval_stage       text,           -- Phase 2 | BLA Pending | Pre-BLA | Approved
+    mechanism_class      text,           -- ASO | AOC | Gene Therapy
+    eligible_patient_pct numeric(5,2),   -- % of DMD patients this drug can treat
     unique (ticker)
 );
+
+-- Migration: add columns if upgrading an existing install
+alter table clinical_metrics add column if not exists approval_stage       text;
+alter table clinical_metrics add column if not exists mechanism_class      text;
+alter table clinical_metrics add column if not exists eligible_patient_pct numeric(5,2);
 
 -- ============================================================
 -- Helper RPC used by seed.py to run DDL programmatically

@@ -10,6 +10,9 @@ class ClinicalSnapshot(BaseModel):
     half_life_days: float
     grade_3_ae_pct: float
     audit_text: str
+    approval_stage: str = ""        # Phase 2 | BLA Pending | Pre-BLA | Approved
+    mechanism_class: str = ""       # ASO | AOC | Gene Therapy
+    eligible_patient_pct: float = 0.0  # % of DMD patients eligible
 
 
 class PeerResult(BaseModel):
@@ -22,6 +25,31 @@ class PeerResult(BaseModel):
 class PeersResponse(BaseModel):
     base_ticker: str
     peers: list[PeerResult]
+
+
+# ── /api/universe ─────────────────────────────────────────────────────────────
+
+class UniverseTicker(BaseModel):
+    ticker: str
+    company_name: str
+    clinical: ClinicalSnapshot
+
+
+class UniverseResponse(BaseModel):
+    tickers: list[UniverseTicker]
+
+
+# ── /api/compare ──────────────────────────────────────────────────────────────
+
+class CompareRequest(BaseModel):
+    base_ticker: str
+    compare_ticker: str
+
+
+class CompareResponse(BaseModel):
+    headline: str
+    key_differences: list[str] = Field(default_factory=list)
+    investment_angle: str
 
 
 # ── /api/diligence — Iterative War Room ───────────────────────────────────────

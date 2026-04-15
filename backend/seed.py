@@ -44,13 +44,21 @@ create table if not exists dmd_mechanisms (
 
 -- Clinical metrics table (1-to-1 with dmd_mechanisms)
 create table if not exists clinical_metrics (
-    id              bigserial primary key,
-    ticker          text not null references dmd_mechanisms(ticker) on delete cascade,
-    emax_pct        numeric(5,2),   -- peak dystrophin restoration (% of normal)
-    half_life_days  numeric(6,2),   -- serum/tissue half-life in days
-    grade_3_ae_pct  numeric(5,2),   -- rate of Grade ≥3 adverse events (%)
-    audit_text      text
+    id                   bigserial primary key,
+    ticker               text not null references dmd_mechanisms(ticker) on delete cascade,
+    emax_pct             numeric(5,2),   -- peak dystrophin restoration (% of normal)
+    half_life_days       numeric(6,2),   -- serum/tissue half-life in days
+    grade_3_ae_pct       numeric(5,2),   -- rate of Grade ≥3 adverse events (%)
+    audit_text           text,
+    approval_stage       text,           -- Phase 2 | BLA Pending | Pre-BLA | Approved
+    mechanism_class      text,           -- ASO | AOC | Gene Therapy
+    eligible_patient_pct numeric(5,2)    -- % of DMD patients this drug can treat
 );
+
+-- Add new columns if table was already created without them (idempotent)
+alter table clinical_metrics add column if not exists approval_stage       text;
+alter table clinical_metrics add column if not exists mechanism_class      text;
+alter table clinical_metrics add column if not exists eligible_patient_pct numeric(5,2);
 """
 
 # ---------------------------------------------------------------------------
@@ -76,6 +84,9 @@ COMPANIES = [
             "emax_pct": 8.72,
             "half_life_days": 28.0,
             "grade_3_ae_pct": 6.2,
+            "approval_stage": "BLA Pending",
+            "mechanism_class": "AOC",
+            "eligible_patient_pct": 13.0,
             "audit_text": (
                 "Z-rostudirsen (DYNE-251, exon 51 skip). DELIVER Ph1/2 Registrational Expansion "
                 "Cohort (REC, 20 mg/kg Q4W, n=32): primary endpoint met — mean dystrophin 5.46% "
@@ -106,6 +117,9 @@ COMPANIES = [
             "emax_pct": 25.0,
             "half_life_days": 21.0,
             "grade_3_ae_pct": 4.8,
+            "approval_stage": "Pre-BLA",
+            "mechanism_class": "AOC",
+            "eligible_patient_pct": 7.0,
             "audit_text": (
                 "Del-zota (AOC 1044, exon 44 skip). EXPLORE44 Ph1/2 (n=enrolled ongoing): "
                 "1-year data (August 2025) showed mean 25% dystrophin of normal with near-"
@@ -136,6 +150,9 @@ COMPANIES = [
             "emax_pct": 28.1,
             "half_life_days": 365.0,  # effectively permanent (single dose)
             "grade_3_ae_pct": 12.4,
+            "approval_stage": "Approved",
+            "mechanism_class": "Gene Therapy",
+            "eligible_patient_pct": 40.0,
             "audit_text": (
                 "ELEVIDYS (delandistrogene moxeparvovec). FDA accelerated approval June 2023; "
                 "label expanded to ambulatory ages 4+ in June 2024. EMBARK Ph3 (n=125): micro-"
@@ -170,6 +187,9 @@ COMPANIES = [
             "emax_pct": 9.0,
             "half_life_days": 14.0,
             "grade_3_ae_pct": 0.0,
+            "approval_stage": "Phase 2",
+            "mechanism_class": "ASO",
+            "eligible_patient_pct": 10.0,
             "audit_text": (
                 "WVE-N531 (exon 53 skip). FORWARD-53 Ph2 (n=11, exon 53 amenable): 24-week mean "
                 "dystrophin 9.0% of normal (range 4.6–13.9%) and 5.5% unadjusted (western blot). "
@@ -235,11 +255,14 @@ def upsert_clinical(company: dict) -> None:
     c = company["clinical"]
     supabase.table("clinical_metrics").upsert(
         {
-            "ticker":         company["ticker"],
-            "emax_pct":       c["emax_pct"],
-            "half_life_days": c["half_life_days"],
-            "grade_3_ae_pct": c["grade_3_ae_pct"],
-            "audit_text":     c["audit_text"],
+            "ticker":                company["ticker"],
+            "emax_pct":              c["emax_pct"],
+            "half_life_days":        c["half_life_days"],
+            "grade_3_ae_pct":        c["grade_3_ae_pct"],
+            "audit_text":            c["audit_text"],
+            "approval_stage":        c["approval_stage"],
+            "mechanism_class":       c["mechanism_class"],
+            "eligible_patient_pct":  c["eligible_patient_pct"],
         },
         on_conflict="ticker",
     ).execute()
