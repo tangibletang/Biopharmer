@@ -10,7 +10,8 @@ from typing import Any
 
 # In-app key → Yahoo Finance symbol (official listing)
 YAHOO_SYMBOLS: dict[str, str] = {
-    "DYNE": "DYNE",
+    # Dyne Therapeutics trades as DYN on Nasdaq; DYNE returns no series on Yahoo.
+    "DYNE": "DYN",
     # Avidity Biosciences trades under AVDL (NASDAQ); "RNA" is the in-app shorthand.
     "RNA": "AVDL",
     "SRPT": "SRPT",

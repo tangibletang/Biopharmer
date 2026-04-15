@@ -315,7 +315,7 @@ const DYNE_MILESTONES: Milestone[] = [
   {
     date: '2024-02-26',
     label: 'ACHIEVE DM1 Interim — Platform Validated',
-    detail: 'Dyne reported positive ACHIEVE Ph1/2 interim data for z-basivarsen in DM1 at the NORD Rare Disease Summit. Multiple cohorts showed statistically significant splicing improvement and vHOT functional benefit. Cross-indication validation of the FORCE platform drove a 28% single-week surge in DYN.',
+    detail: 'Dyne reported positive ACHIEVE Ph1/2 interim data for z-basivarsen in DM1 at the NORD Rare Disease Summit. Multiple cohorts showed statistically significant splicing improvement and vHOT functional benefit. Cross-indication validation of the FORCE platform drove a 28% single-week surge in DYNE.',
     type: 'positive',
     category: 'historical',
   },

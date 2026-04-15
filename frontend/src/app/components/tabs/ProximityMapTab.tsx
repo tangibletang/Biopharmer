@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback, useState, useEffect } from 'react'
 import type { Ticker, PeersResponse, PeerResult } from '../../types'
+import { displayTicker } from '../../types'
 import { ALL_TICKERS, TICKER_COLORS, CLINICAL_DATA } from '../../mockData'
 import RadarModal from '../RadarModal'
 
@@ -145,12 +146,12 @@ export default function ProximityMapTab({ ticker }: Props) {
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
           className="rounded"
           role="img"
-          aria-label={`Scientific proximity network centered on ${ticker}`}
+          aria-label={`Scientific proximity network centered on ${displayTicker(ticker)}`}
           style={{ background: '#0d1117' }}
         >
-          <title>Scientific proximity network for {ticker}</title>
+          <title>Scientific proximity network for {displayTicker(ticker)}</title>
           <desc>
-            Hub layout: {ticker} at center, peers on a ring by similarity; edges show embedding cosine similarity.
+            Hub layout: {displayTicker(ticker)} at center, peers on a ring by similarity; edges show embedding cosine similarity.
           </desc>
 
           {/* Light structure only — same palette as rest of app */}
@@ -234,7 +235,7 @@ export default function ProximityMapTab({ ticker }: Props) {
                   fontWeight="bold"
                   dy={!isBase && isPeer ? -5 : !isBase && !isPeer ? -4 : 0}
                 >
-                  {t}
+                  {displayTicker(t)}
                 </text>
                 {isPeer && !isBase && (
                   <text textAnchor="middle" dominantBaseline="middle" dy={9} fill="#8b949e" fontSize={9}>
@@ -262,7 +263,7 @@ export default function ProximityMapTab({ ticker }: Props) {
             <div className="flex items-center gap-2 mb-2">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TICKER_COLORS[peer.ticker as Ticker] }} />
               <span className="text-sm font-semibold" style={{ color: TICKER_COLORS[peer.ticker as Ticker] }}>
-                ${peer.ticker}
+                ${displayTicker(peer.ticker)}
               </span>
               <span className="ml-auto text-[10px] text-muted border border-border rounded px-1.5 py-0.5">
                 {(peer.similarity * 100).toFixed(1)}% similar
@@ -289,9 +290,9 @@ export default function ProximityMapTab({ ticker }: Props) {
 
       {selectedPeer && (
         <RadarModal
-          baseTicker={ticker}
+          baseTicker={displayTicker(ticker)}
           baseClinical={CLINICAL_DATA[ticker]}
-          peerTicker={selectedPeer.ticker}
+          peerTicker={displayTicker(selectedPeer.ticker)}
           peerClinical={selectedPeer.clinical}
           similarity={selectedPeer.similarity}
           onClose={() => setSelectedPeer(null)}

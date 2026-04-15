@@ -1,5 +1,10 @@
 export type Ticker = 'DYNE' | 'RNA' | 'SRPT' | 'WVE'
 
+/** Nasdaq-style symbol for UI labels (Dyne is **DYN**). API paths still use the in-app id `DYNE`. */
+export function displayTicker(t: Ticker | string): string {
+  return t === 'DYNE' ? 'DYN' : t
+}
+
 export interface ClinicalSnapshot {
   emax_pct: number
   half_life_days: number

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Ticker, DiligenceResponse } from '../../types'
+import { displayTicker } from '../../types'
 import BullBearMatrix from '../BullBearMatrix'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -73,7 +74,7 @@ export default function WarRoomTab({ ticker }: Props) {
     <div className="space-y-6 max-w-4xl">
       <div className="bg-surface border border-border rounded-lg p-6">
         <h2 className="text-sm font-semibold text-[#e6edf3] mb-1">
-          War Room — ${ticker}
+          War Room — ${displayTicker(ticker)}
         </h2>
         <p className="text-xs text-muted mb-5">
           Stock-focused diligence for the selected ticker: parallel investment angles explore the thesis from
@@ -114,7 +115,7 @@ export default function WarRoomTab({ ticker }: Props) {
               : 'bg-accent text-canvas hover:bg-[#79b8ff]',
           ].join(' ')}
         >
-          {running ? 'Running…' : result ? `Re-run — $${ticker}` : `Run War Room — $${ticker}`}
+          {running ? 'Running…' : result ? `Re-run — $${displayTicker(ticker)}` : `Run War Room — $${displayTicker(ticker)}`}
         </button>
       </div>
 
@@ -178,7 +179,7 @@ export default function WarRoomTab({ ticker }: Props) {
                   AI-generated · Not financial advice
                 </span>
               </div>
-              <BullBearMatrix synthesis={result.synthesis} ticker={ticker} />
+              <BullBearMatrix synthesis={result.synthesis} ticker={displayTicker(ticker)} />
             </div>
           )}
 

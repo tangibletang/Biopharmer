@@ -6,6 +6,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from 'recharts'
 import type { Ticker, Milestone, PricesResponse } from '../../types'
+import { displayTicker } from '../../types'
 import { TICKER_DATA } from '../../mockData'
 import MilestoneModal from '../MilestoneModal'
 
@@ -396,7 +397,7 @@ export default function TimelineTab({ ticker }: { ticker: Ticker }) {
           <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
             <div>
               <h2 className="text-sm font-semibold text-[#e6edf3]">
-                ${ticker} —{' '}
+                ${displayTicker(ticker)} —{' '}
                 {yahooPrices
                   ? `Daily close (${yahooPrices.yahoo_symbol} · ${priceProviderLabel(yahooPrices.provider)} · ${yahooPrices.period})`
                   : 'Price history (embedded weekly sample)'}

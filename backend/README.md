@@ -20,7 +20,7 @@ Interactive docs: http://localhost:8000/docs
 
 Valid tickers: `DYNE`, `RNA`, `SRPT`, `WVE`
 
-**Prices:** `RNA` maps to listing symbol **`AVDL`** (Avidity Biosciences). A free Alpha Vantage key only gets **~100 trading days** (`TIME_SERIES_DAILY` compact) and **premium-only** endpoints (e.g. adjusted daily, `outputsize=full`) are not used — for **`2y`** (default), **`5y`**, **`max`**, etc., the API uses Yahoo. On error, rate limits, or missing key, Yahoo is used (unofficial; use lightly).
+**Prices:** `DYNE` maps to **`DYN`** (Dyne on Yahoo); `RNA` maps to **`AVDL`** (Avidity). A free Alpha Vantage key only gets **~100 trading days** (`TIME_SERIES_DAILY` compact) and **premium-only** endpoints (e.g. adjusted daily, `outputsize=full`) are not used — for **`2y`** (default), **`5y`**, **`max`**, etc., the API uses Yahoo. On error, rate limits, or missing key, Yahoo is used (unofficial; use lightly).
 
 Uses mechanism text, `clinical_metrics`, and pgvector peers from the same DB as `/api/peers`.
 

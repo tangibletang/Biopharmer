@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { Ticker } from './types'
+import { displayTicker } from './types'
 import Sidebar from './components/Sidebar'
 import TimelineTab from './components/tabs/TimelineTab'
 import ProximityMapTab from './components/tabs/ProximityMapTab'
@@ -35,7 +36,7 @@ export default function Home() {
 
         {/* Ticker banner */}
         <div className="flex items-baseline gap-3 px-6 py-4 border-b border-border shrink-0">
-          <h1 className="text-2xl font-bold tracking-tight text-[#e6edf3]">${ticker}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-[#e6edf3]">${displayTicker(ticker)}</h1>
           <span className="text-sm text-muted">Duchenne Muscular Dystrophy universe</span>
         </div>
 

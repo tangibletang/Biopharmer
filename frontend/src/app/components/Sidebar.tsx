@@ -1,6 +1,7 @@
 'use client'
 
 import type { Ticker } from '../types'
+import { displayTicker } from '../types'
 import { ALL_TICKERS, COMPANY_NAMES, TICKER_COLORS, CLINICAL_DATA } from '../mockData'
 
 interface Props {
@@ -43,7 +44,7 @@ export default function Sidebar({ selected, onSelect }: Props) {
                   className="text-sm font-bold"
                   style={{ color: isActive ? TICKER_COLORS[t] : '#e6edf3' }}
                 >
-                  ${t}
+                  ${displayTicker(t)}
                 </span>
               </div>
 
