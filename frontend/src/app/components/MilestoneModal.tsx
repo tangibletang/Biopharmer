@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { Milestone, Ticker } from '../types'
+import type { Milestone } from '../types'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
 interface Props {
   milestone: Milestone
-  ticker: Ticker
+  ticker: string
   onClose: () => void
 }
 

@@ -113,6 +113,13 @@ export interface UniverseResponse {
   tickers: UniverseTicker[]
 }
 
+// ── War room persisted state ───────────────────────────────────────────────────
+
+export interface PersistedResearch {
+  result: WarRoomResponse | null
+  focus: string
+}
+
 // ── /api/compare ──────────────────────────────────────────────────────────────
 
 export interface CompareRequest {

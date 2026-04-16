@@ -1,17 +1,16 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { Ticker, TranscriptMessage, WarRoomResponse, SynthesisOutput } from '../../types'
+import type { TranscriptMessage, WarRoomResponse, SynthesisOutput, PersistedResearch } from '../../types'
 import { displayTicker } from '../../types'
-import type { PersistedResearch } from '../../page'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
 interface Props {
-  ticker: Ticker
+  ticker: string
   saved?: PersistedResearch
   onSave?: (state: PersistedResearch) => void
-  onSynthesis?: (ticker: Ticker, actionableMetric: string) => void
+  onSynthesis?: (ticker: string, actionableMetric: string) => void
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
