@@ -141,9 +141,17 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
 
   useEffect(() => { setTodayStr(localDateISO(new Date())) }, [])
 
+  // Clear stale data only when the ticker changes, not on period changes.
+  // This keeps the previous period's chart visible while the new period loads.
+  useEffect(() => {
+    setYahooPrices(null)
+    setPricesError(null)
+  }, [ticker])
+
   useEffect(() => {
     let cancelled = false
-    setPricesLoading(true); setPricesError(null); setYahooPrices(null)
+    setPricesLoading(true)
+    setPricesError(null)
     fetch(`${API}/api/prices/${ticker}?period=${period}`)
       .then(async r => { if (!r.ok) throw new Error(await r.text()); return r.json() as Promise<PricesResponse> })
       .then(d  => { if (!cancelled && d.prices?.length) setYahooPrices(d) })
@@ -204,10 +212,10 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
   const priceMin = chartPrices.length ? Math.min(...chartPrices.map(p => p.price)) : 0
   const priceMax = chartPrices.length ? Math.max(...chartPrices.map(p => p.price)) : 1
   const ppad     = Math.max((priceMax - priceMin) * 0.08, 0.01)
-  const latestPrice  = chartPrices.at(-1)?.price ?? null
-  const prevPrice    = chartPrices.at(-2)?.price ?? null
-  const dayChange    = latestPrice != null && prevPrice != null ? latestPrice - prevPrice : null
-  const dayChangePct = dayChange != null && prevPrice ? (dayChange / prevPrice) * 100 : null
+  const latestPrice    = chartPrices.at(-1)?.price ?? null
+  const periodStart    = chartPrices.at(0)?.price ?? null
+  const periodChange   = latestPrice != null && periodStart != null ? latestPrice - periodStart : null
+  const periodChangePct = periodChange != null && periodStart ? (periodChange / periodStart) * 100 : null
 
   function opa(cat: 'historical' | 'projected') {
     return filter === 'all' || filter === cat ? 1 : 0.18
@@ -225,9 +233,9 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
               {latestPrice != null && (
                 <>
                   <span className="text-lg font-semibold font-mono text-[#e6edf3]">${latestPrice.toFixed(2)}</span>
-                  {dayChange != null && dayChangePct != null && (
-                    <span className={['text-xs font-mono', dayChange >= 0 ? 'text-positive' : 'text-negative'].join(' ')}>
-                      {dayChange >= 0 ? '+' : ''}{dayChange.toFixed(2)} ({dayChange >= 0 ? '+' : ''}{dayChangePct.toFixed(2)}%)
+                  {periodChange != null && periodChangePct != null && (
+                    <span className={['text-xs font-mono', periodChange >= 0 ? 'text-positive' : 'text-negative'].join(' ')}>
+                      {periodChange >= 0 ? '+' : ''}{periodChange.toFixed(2)} ({periodChange >= 0 ? '+' : ''}{periodChangePct.toFixed(2)}%)
                     </span>
                   )}
                 </>
@@ -235,7 +243,9 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
               {pricesLoading && <span className="text-[10px] text-muted animate-pulse">loading…</span>}
             </div>
             <div className="text-[10px] text-muted mt-0.5">
-              {yahooPrices ? `${yahooPrices.yahoo_symbol} · ${priceProviderLabel(yahooPrices.provider)} · ${chartPrices.length} days` : pricesError ? 'Showing embedded data' : 'Embedded sample'}
+              {yahooPrices
+                ? `${yahooPrices.yahoo_symbol} · ${PERIODS.find(p => p.value === yahooPrices.period)?.label ?? yahooPrices.period} · ${chartPrices.length} pts · ${priceProviderLabel(yahooPrices.provider)}`
+                : pricesError ? 'Showing embedded data' : 'Embedded sample'}
               {yahooPrices?.currency ? ` · ${yahooPrices.currency}` : ''}
             </div>
           </div>
