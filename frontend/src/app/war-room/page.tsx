@@ -51,7 +51,7 @@ interface SectorConfig {
 const SECTOR_CONFIG: Record<string, SectorConfig> = {
   dmd: {
     label: 'Genetic Diseases',
-    universe: 'Duchenne Muscular Dystrophy universe',
+    universe: 'DMD · live coverage',
     companies: [],   // DMD uses ALL_TICKERS from mockData
     accentColor: '#3fb950',
   },
@@ -324,8 +324,8 @@ function WarRoomContent() {
         {dmdMode === 'competitive' && (
           <main className="flex-1 overflow-auto bg-canvas p-6">
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-[#e6edf3]">DMD Universe — Competitive Timeline</h2>
-              <p className="text-xs text-muted mt-0.5">All four companies on one axis · click any event for AI analysis</p>
+              <h2 className="text-sm font-semibold text-[#e6edf3]">DMD — competitive timeline</h2>
+              <p className="text-xs text-muted mt-0.5">Four names on one axis · click an event for context</p>
             </div>
             <ProximityMapTab ticker={dmdTicker} />
           </main>
@@ -342,7 +342,7 @@ function WarRoomContent() {
 
             <div className="flex items-baseline gap-3 px-6 py-3 border-b border-border bg-canvas shrink-0">
               <h1 className="text-xl font-bold tracking-tight text-[#e6edf3]">${displayTicker(dmdTicker)}</h1>
-              <span className="text-xs text-muted">Duchenne Muscular Dystrophy universe</span>
+              <span className="text-xs text-muted">DMD · live coverage</span>
             </div>
 
             <nav className="flex gap-1 px-6 pt-3 border-b border-border bg-canvas shrink-0">
@@ -407,8 +407,8 @@ function WarRoomContent() {
           <a href="/" className="text-xs text-muted hover:text-[#e6edf3] transition-colors tracking-widest uppercase">
             ← Hub
           </a>
-          <span className="text-xs text-muted uppercase tracking-widest" style={{ color: config.accentColor }}>
-            {config.label} Intelligence Terminal
+          <span className="text-xs text-muted" style={{ color: config.accentColor }}>
+            {config.label} · coming soon
           </span>
           <span className="ml-auto text-xs text-muted">v0.2</span>
         </header>

@@ -41,24 +41,24 @@ export default function HubPage() {
       <header className="flex items-center justify-between px-8 py-4 border-b border-border bg-surface/60 backdrop-blur-sm">
         <div>
           <span className="text-accent font-bold tracking-[0.2em] text-sm">BIOPHARMER</span>
-          <span className="ml-3 text-[10px] text-muted uppercase tracking-widest">Intelligence Terminal</span>
+          <span className="ml-3 text-[10px] text-muted">Biotech investing</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />
-          <span className="text-[10px] text-muted uppercase tracking-widest">1 universe live</span>
+          <span className="text-[10px] text-muted">DMD live · more soon</span>
         </div>
       </header>
 
       {/* Hero */}
       <div className="px-8 pt-14 pb-10 max-w-5xl mx-auto w-full">
-        <p className="text-[10px] text-accent uppercase tracking-[0.25em] mb-3">Biotech Intelligence</p>
+        <p className="text-[10px] text-accent uppercase tracking-[0.25em] mb-3">For biotech investors</p>
         <h1 className="text-4xl font-bold tracking-tight text-[#e6edf3] leading-tight">
-          Follow the science.<br />
-          <span className="text-muted font-normal">Track every catalyst.</span>
+          See catalysts, comps, and prices<br />
+          <span className="text-muted font-normal">in one place.</span>
         </h1>
         <p className="mt-4 text-sm text-muted max-w-md leading-relaxed">
-          Deep-dive into disease micro-universes — clinical milestones,
-          competitive timelines, and AI-powered catalyst research in one terminal.
+          Live DMD coverage today: clinical milestones, a competitive view across four names,
+          live prices, and AI research when you want to go deeper — built for investment decisions, not jargon.
         </p>
       </div>
 
@@ -82,14 +82,14 @@ export default function HubPage() {
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-positive/15 text-positive border border-positive/30 uppercase tracking-widest">
                   Live
                 </span>
-                <span className="text-[10px] text-muted uppercase tracking-widest">Genetic Diseases</span>
+                <span className="text-[10px] text-muted">Genetic disease</span>
               </div>
               <h2 className="text-2xl font-bold text-[#e6edf3] mt-2 tracking-tight">
-                Duchenne Muscular Dystrophy
+                DMD
               </h2>
-              <p className="text-sm text-muted mt-1.5 max-w-sm leading-relaxed">
-                The complete DMD micro-universe — four companies racing toward an exon-skipping cure,
-                tracked from Phase 1 to PDUFA date.
+              <p className="text-[11px] text-muted/90 mt-0.5">Duchenne muscular dystrophy</p>
+              <p className="text-sm text-muted mt-2 max-w-sm leading-relaxed">
+                Four public names, 50+ catalysts, live prices — plus timelines and AI diligence so you can follow what matters for the trade.
               </p>
             </div>
 
@@ -125,7 +125,7 @@ export default function HubPage() {
               4 companies · 50+ milestones · real-time data
             </span>
             <span className="text-xs font-semibold text-positive group-hover:translate-x-0.5 transition-transform duration-150">
-              Enter Terminal →
+              Open workspace →
             </span>
           </div>
         </a>

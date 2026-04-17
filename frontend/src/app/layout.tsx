@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Biopharmer — DMD Intelligence Terminal',
-  description: 'Biotech investing platform with multi-agent clinical diligence',
+  title: 'Biopharmer — Biotech investing & DMD catalysts',
+  description:
+    'Catalysts, comps, and prices for biotech investors — live DMD coverage with timelines, competitive view, and AI research.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
