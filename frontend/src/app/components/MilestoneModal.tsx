@@ -44,8 +44,8 @@ export default function MilestoneModal({ milestone, ticker, onClose }: Props) {
   const styles = TYPE_STYLES[milestone.type]
   const [analysis, setAnalysis] = useState<MilestoneAnalysis | null>(null)
   const [error, setError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
-  // Fire immediately on open — no button needed
   useEffect(() => {
     let cancelled = false
     setAnalysis(null)
@@ -71,7 +71,7 @@ export default function MilestoneModal({ milestone, ticker, onClose }: Props) {
       .catch(() => { if (!cancelled) setError(true) })
 
     return () => { cancelled = true }
-  }, [ticker, milestone.label, milestone.date])
+  }, [ticker, milestone.label, milestone.date, retryKey])
 
   return (
     <div
@@ -130,9 +130,17 @@ export default function MilestoneModal({ milestone, ticker, onClose }: Props) {
 
           {/* Error */}
           {error && (
-            <p className="text-xs text-muted italic">
-              Analysis unavailable — ensure the backend is running.
-            </p>
+            <div className="space-y-2">
+              <p className="text-xs text-muted italic">
+                Analysis unavailable — the backend may still be waking up.
+              </p>
+              <button
+                onClick={() => setRetryKey(k => k + 1)}
+                className="text-xs px-3 py-1.5 rounded border border-accent/40 text-accent hover:bg-accent/10 transition-colors"
+              >
+                Try again
+              </button>
+            </div>
           )}
 
           {/* Content */}

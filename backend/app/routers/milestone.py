@@ -60,21 +60,30 @@ async def analyze_milestone(body: MilestoneAnalyzeRequest):
             detail=f"Ticker '{ticker}' not in DMD micro-universe.",
         )
 
-    # Load context
-    row = fetch_one(
-        "SELECT mechanism_text, company_name FROM dmd_mechanisms WHERE ticker = %s",
-        (ticker,),
-    )
+    # Load context — degrade gracefully if DB is unavailable
+    try:
+        row = fetch_one(
+            "SELECT mechanism_text, company_name FROM dmd_mechanisms WHERE ticker = %s",
+            (ticker,),
+        )
+    except Exception:
+        row = None
     mechanism_text = row["mechanism_text"] if row else "Mechanism unknown."
     company_name = row["company_name"] if row else ticker
 
-    clinical = fetch_one(
-        "SELECT audit_text FROM clinical_metrics WHERE ticker = %s",
-        (ticker,),
-    )
+    try:
+        clinical = fetch_one(
+            "SELECT audit_text FROM clinical_metrics WHERE ticker = %s",
+            (ticker,),
+        )
+    except Exception:
+        clinical = None
     audit_text = (clinical["audit_text"] if clinical else "") or ""
 
-    peers = search_scientific_peers(ticker)
+    try:
+        peers = search_scientific_peers(ticker)
+    except Exception:
+        peers = []
     peers_block = "\n".join(
         f"  • {p['ticker']} ({p['company_name']}): similarity={float(p['similarity']):.3f}, "
         f"Emax={p['emax_pct']}%, Grade3+AE={p['grade_3_ae_pct']}%, "
