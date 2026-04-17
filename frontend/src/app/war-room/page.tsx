@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import type { Ticker, PersistedResearch } from '../types'
 import { displayTicker } from '../types'
-import { ALL_TICKERS, COMPANY_NAMES, TICKER_COLORS, CLINICAL_DATA } from '../mockData'
+import { ALL_TICKERS, COMPANY_NAMES, TICKER_COLORS } from '../mockData'
 import TimelineTab from '../components/tabs/TimelineTab'
 import ProximityMapTab from '../components/tabs/ProximityMapTab'
 import WarRoomTab from '../components/tabs/WarRoomTab'
@@ -108,87 +108,55 @@ function DmdCompanyStrip({
   }, [])
 
   return (
-    <div className="grid grid-cols-4 gap-3 px-6 py-4 border-b border-border bg-surface/40 shrink-0">
+    <div className="grid grid-cols-4 gap-2 px-6 py-2.5 border-b border-border bg-surface/40 shrink-0">
       {ALL_TICKERS.map(t => {
-        const isActive  = t === selected
-        const summary   = prices[t]
-        const clinical  = CLINICAL_DATA[t]
-        const positive  = !summary || summary.changePct >= 0
-        const color     = TICKER_COLORS[t]
+        const isActive = t === selected
+        const summary  = prices[t]
+        const positive = !summary || summary.changePct >= 0
+        const color    = TICKER_COLORS[t]
 
         return (
           <button
             key={t}
             onClick={() => onSelect(t)}
             className={[
-              'relative rounded-lg px-4 py-3 text-left transition-all duration-150 border',
+              'relative rounded-lg px-3 py-2 text-left transition-all duration-150 border',
               isActive
-                ? 'bg-[#161b22] border-border shadow-sm ring-1'
+                ? 'bg-[#161b22] border-border shadow-sm'
                 : 'bg-canvas border-transparent hover:bg-[#161b22] hover:border-border/60',
             ].join(' ')}
-            style={isActive ? { ringColor: color, borderColor: color + '60' } as React.CSSProperties : {}}
+            style={isActive ? { borderColor: color + '60' } : {}}
           >
-            {/* Active indicator stripe */}
             {isActive && (
-              <div
-                className="absolute top-0 left-4 right-4 h-0.5 rounded-full"
-                style={{ backgroundColor: color }}
-              />
+              <div className="absolute top-0 left-3 right-3 h-0.5 rounded-full" style={{ backgroundColor: color }} />
             )}
 
-            {/* Ticker + price */}
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
-                <span
-                  className="w-2 h-2 rounded-full shrink-0 mt-0.5"
-                  style={{ backgroundColor: color }}
-                />
-                <span
-                  className="text-base font-bold font-mono tracking-tight"
-                  style={{ color: isActive ? color : '#c9d1d9' }}
-                >
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                <span className="text-sm font-bold font-mono" style={{ color: isActive ? color : '#c9d1d9' }}>
                   ${displayTicker(t)}
                 </span>
               </div>
-
               {summary ? (
                 <div className="text-right shrink-0">
-                  <div
-                    className="text-sm font-mono font-semibold"
-                    style={{ color: isActive ? color : '#e6edf3' }}
-                  >
+                  <div className="text-xs font-mono font-semibold" style={{ color: isActive ? color : '#e6edf3' }}>
                     ${summary.price.toFixed(2)}
                   </div>
-                  <div className={[
-                    'text-[10px] font-mono',
-                    positive ? 'text-positive' : 'text-negative',
-                  ].join(' ')}>
+                  <div className={['text-[10px] font-mono', positive ? 'text-positive' : 'text-negative'].join(' ')}>
                     {positive ? '+' : ''}{summary.changePct.toFixed(2)}%
                   </div>
                 </div>
               ) : (
-                <div className="text-[10px] text-muted/40 pt-0.5">—</div>
+                <span className="text-[10px] text-muted/40">—</span>
               )}
             </div>
 
-            {/* Company name */}
-            <div className="text-[10px] text-muted mt-1 pl-3.5 leading-tight truncate">
-              {COMPANY_NAMES[t]}
-            </div>
+            <div className="text-[10px] text-muted mt-0.5 pl-3.5 truncate">{COMPANY_NAMES[t]}</div>
 
-            {/* Clinical metrics — only for active */}
-            {isActive && (
-              <div className="mt-3 pt-2 border-t border-border/40 grid grid-cols-3 gap-x-2">
-                <Metric label="Emax"  value={`${clinical.emax_pct}%`}         color={color} />
-                <Metric label="t½"    value={`${clinical.half_life_days}d`}    color={color} />
-                <Metric label="AE3+"  value={`${clinical.grade_3_ae_pct}%`}   color="#f85149" />
-              </div>
-            )}
-
-            {/* AI catalyst */}
             {catalysts[t] && (
-              <div className="mt-2 pl-3.5">
-                <p className="text-[10px] leading-snug line-clamp-2" style={{ color: color + 'cc' }}>
+              <div className="mt-1 pl-3.5">
+                <p className="text-[10px] leading-snug line-clamp-1" style={{ color: color + 'cc' }}>
                   → {catalysts[t]}
                 </p>
               </div>
@@ -200,14 +168,6 @@ function DmdCompanyStrip({
   )
 }
 
-function Metric({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div className="flex flex-col items-center">
-      <span className="text-[9px] text-muted uppercase tracking-wide">{label}</span>
-      <span className="text-[11px] font-mono font-semibold" style={{ color }}>{value}</span>
-    </div>
-  )
-}
 
 // ── Non-DMD Sidebar ───────────────────────────────────────────────────────────
 
