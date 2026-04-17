@@ -79,25 +79,24 @@ function milestoneMapForSeries(milestones: Milestone[], seriesDates: string[]): 
 }
 
 // ── Chart dot with hover glow ─────────────────────────────────────────────────
+// NOTE: No mouse handlers here — hover is detected at the LineChart level via
+// onMouseMove to avoid a re-mount loop (dot re-mounts on state change → fires
+// onMouseLeave → clears hover before SVG timeline can react).
 function MilestoneDot(props: {
   cx?: number; cy?: number
   payload?: { date: string }
   mmap: Map<string, Milestone>
   hovered: string | null
-  onHover: (label: string | null, src: HoverSrc) => void
   onOpen: (m: Milestone) => void
 }) {
-  const { cx = 0, cy = 0, payload, mmap, hovered, onHover, onOpen } = props
+  const { cx = 0, cy = 0, payload, mmap, hovered, onOpen } = props
   if (!payload) return null
   const m = mmap.get(payload.date)
   if (!m) return <circle cx={cx} cy={cy} r={2} fill="#21262d" />
   const col   = TYPE_COLOR[m.type]
   const isHot = hovered === m.label
   return (
-    <g style={{ cursor: 'pointer' }}
-      onMouseEnter={() => onHover(m.label, 'chart')}
-      onMouseLeave={() => onHover(null, null)}
-      onClick={() => onOpen(m)}>
+    <g style={{ cursor: 'pointer' }} onClick={() => onOpen(m)}>
       {isHot && <circle cx={cx} cy={cy} r={16} fill={col} fillOpacity={0.12} />}
       {isHot && <circle cx={cx} cy={cy} r={11} fill={col} fillOpacity={0.18} />}
       <circle cx={cx} cy={cy} r={isHot ? 8 : 6} fill={col} stroke="#0d1117" strokeWidth={2} />
@@ -239,7 +238,16 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
         <div className="px-1 pb-3">
           {chartPrices.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartPrices} margin={{ top: 4, right: 16, bottom: 0, left: 6 }}>
+              <LineChart
+                data={chartPrices}
+                margin={{ top: 4, right: 16, bottom: 0, left: 6 }}
+                onMouseMove={(state) => {
+                  const date = (state?.activePayload?.[0]?.payload as { date?: string } | undefined)?.date
+                  const m = date ? mmap.get(date) : undefined
+                  setHover(m?.label ?? null, 'chart')
+                }}
+                onMouseLeave={() => setHover(null, null)}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#21262d" vertical={false} />
                 <XAxis dataKey="date" tickLine={false} axisLine={false}
                   tick={{ fill: '#8b949e', fontSize: 9 }}
@@ -266,19 +274,20 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
                 {todayStr && seriesDates.includes(todayStr) && (
                   <ReferenceLine x={todayStr} stroke="#58a6ff" strokeDasharray="4 3" strokeOpacity={0.4} />
                 )}
-                {hoveredChartDate && (
-                  <ReferenceLine
-                    x={hoveredChartDate}
-                    stroke={TYPE_COLOR[mmap.get(hoveredChartDate)?.type ?? 'neutral']}
-                    strokeWidth={1.5} strokeOpacity={0.8}
-                  />
-                )}
+                <ReferenceLine
+                  x={hoveredChartDate ?? ''}
+                  stroke={hoveredChartDate ? TYPE_COLOR[mmap.get(hoveredChartDate)?.type ?? 'neutral'] : 'transparent'}
+                  strokeWidth={1.5}
+                  strokeOpacity={hoveredChartDate ? 0.8 : 0}
+                  ifOverflow="hidden"
+                />
                 <Tooltip content={<ChartTip mmap={mmap} />} cursor={{ stroke: '#30363d', strokeWidth: 1 }} />
                 <Line type="monotone" dataKey="price" stroke={data.color} strokeWidth={1.5}
+                  isAnimationActive={false}
                   dot={(p: { cx?: number; cy?: number; payload?: { date: string } }) => (
                     <MilestoneDot key={p.payload?.date} {...p}
                       mmap={mmap} hovered={hovered}
-                      onHover={setHover} onOpen={setSelected}
+                      onOpen={setSelected}
                     />
                   )}
                   activeDot={false}
