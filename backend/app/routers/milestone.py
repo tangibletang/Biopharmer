@@ -97,31 +97,34 @@ async def analyze_milestone(body: MilestoneAnalyzeRequest):
         '"severity_rationale":"str","peer_precedent":"str"}'
     )
 
-    resp = _llm.invoke([
-        SystemMessage(content=(
-            f"Today is {today}. You are a senior biotech investment analyst. "
-            "Analyze a single clinical or regulatory milestone for a DMD drug program. "
-            "Return only valid JSON matching this schema exactly — no markdown, no code fences:\n"
-            f"{schema}\n\n"
-            "Severity definitions:\n"
-            "  Critical  — program-defining event, likely moves stock >15%\n"
-            "  Meaningful — changes program trajectory but not existential\n"
-            "  Noise      — routine update, market likely already pricing in\n\n"
-            "For peer_precedent: cite what happened at a peer company (from the peer data provided) "
-            "when a mechanistically or regulatorily similar event occurred. "
-            "If no direct precedent exists, write exactly: No direct precedent in this peer set."
-        )),
-        HumanMessage(content=(
-            f"Company: {company_name} (${ticker})\n"
-            f"Milestone: {body.label}\n"
-            f"Date: {body.date} | Type: {body.type} | Category: {body.category}\n"
-            f"Detail: {body.detail}\n\n"
-            f"Drug mechanism:\n{mechanism_text}\n\n"
-            f"Full trial & regulatory history:\n{audit_text}\n\n"
-            f"Closest scientific peers:\n{peers_block}\n\n"
-            "Analyze this milestone."
-        )),
-    ])
+    try:
+        resp = _llm.invoke([
+            SystemMessage(content=(
+                f"Today is {today}. You are a senior biotech investment analyst. "
+                "Analyze a single clinical or regulatory milestone for a DMD drug program. "
+                "Return only valid JSON matching this schema exactly — no markdown, no code fences:\n"
+                f"{schema}\n\n"
+                "Severity definitions:\n"
+                "  Critical  — program-defining event, likely moves stock >15%\n"
+                "  Meaningful — changes program trajectory but not existential\n"
+                "  Noise      — routine update, market likely already pricing in\n\n"
+                "For peer_precedent: cite what happened at a peer company (from the peer data provided) "
+                "when a mechanistically or regulatorily similar event occurred. "
+                "If no direct precedent exists, write exactly: No direct precedent in this peer set."
+            )),
+            HumanMessage(content=(
+                f"Company: {company_name} (${ticker})\n"
+                f"Milestone: {body.label}\n"
+                f"Date: {body.date} | Type: {body.type} | Category: {body.category}\n"
+                f"Detail: {body.detail}\n\n"
+                f"Drug mechanism:\n{mechanism_text}\n\n"
+                f"Full trial & regulatory history:\n{audit_text}\n\n"
+                f"Closest scientific peers:\n{peers_block}\n\n"
+                "Analyze this milestone."
+            )),
+        ])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"LLM call failed: {e!s}") from e
 
     raw = resp.content.strip()
     if raw.startswith("```"):

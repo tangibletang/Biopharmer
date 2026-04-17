@@ -43,13 +43,13 @@ function Skeleton() {
 export default function MilestoneModal({ milestone, ticker, onClose }: Props) {
   const styles = TYPE_STYLES[milestone.type]
   const [analysis, setAnalysis] = useState<MilestoneAnalysis | null>(null)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
     setAnalysis(null)
-    setError(false)
+    setError(null)
 
     fetch(`${API}/api/milestone/analyze`, {
       method: 'POST',
@@ -64,11 +64,14 @@ export default function MilestoneModal({ milestone, ticker, onClose }: Props) {
       }),
     })
       .then(async res => {
-        if (!res.ok) throw new Error(`${res.status}`)
+        if (!res.ok) {
+          const body = await res.text().catch(() => res.statusText)
+          throw new Error(`${res.status} — ${body}`)
+        }
         return res.json() as Promise<MilestoneAnalysis>
       })
       .then(data => { if (!cancelled) setAnalysis(data) })
-      .catch(() => { if (!cancelled) setError(true) })
+      .catch(e => { if (!cancelled) setError(String(e)) })
 
     return () => { cancelled = true }
   }, [ticker, milestone.label, milestone.date, retryKey])
@@ -121,7 +124,7 @@ export default function MilestoneModal({ milestone, ticker, onClose }: Props) {
               AI Analysis
             </span>
             {!analysis && !error && (
-              <span className="text-[10px] text-muted animate-pulse">loading…</span>
+              <span className="text-[10px] text-muted animate-pulse">loading… (may take ~10s)</span>
             )}
           </div>
 
@@ -131,9 +134,8 @@ export default function MilestoneModal({ milestone, ticker, onClose }: Props) {
           {/* Error */}
           {error && (
             <div className="space-y-2">
-              <p className="text-xs text-muted italic">
-                Analysis unavailable — the backend may still be waking up.
-              </p>
+              <p className="text-xs text-muted italic">Analysis failed.</p>
+              <p className="text-[10px] font-mono text-negative/80 bg-negative/5 border border-negative/20 rounded px-2 py-1.5 break-all">{error}</p>
               <button
                 onClick={() => setRetryKey(k => k + 1)}
                 className="text-xs px-3 py-1.5 rounded border border-accent/40 text-accent hover:bg-accent/10 transition-colors"
