@@ -20,13 +20,13 @@ const EMPTY_TICKER_DATA = {
 }
 
 const PERIODS = [
-  { label: '3M',  value: '3mo' },
+  { label: '1D',  value: '1d'  },
+  { label: '5D',  value: '5d'  },
+  { label: '1M',  value: '1mo' },
   { label: '6M',  value: '6mo' },
   { label: 'YTD', value: 'ytd' },
   { label: '1Y',  value: '1y'  },
-  { label: '2Y',  value: '2y'  },
   { label: '5Y',  value: '5y'  },
-  { label: 'MAX', value: 'max' },
 ] as const
 type PeriodValue = typeof PERIODS[number]['value']
 
@@ -124,7 +124,7 @@ function ChartTip({ active, payload, mmap }: {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function TimelineTab({ ticker }: { ticker: string }) {
-  const [period, setPeriod]     = useState<PeriodValue>('2y')
+  const [period, setPeriod]     = useState<PeriodValue>('1y')
   const [filter, setFilter]     = useState<Filter>('all')
   const [selected, setSelected] = useState<Milestone | null>(null)
   const [hovered, setHovered]   = useState<string | null>(null)
@@ -170,9 +170,13 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
   const projected  = data.milestones.filter((m: Milestone) => m.category === 'projected')
   const chartPrices = yahooPrices?.prices?.length ? yahooPrices.prices : data.prices
   const seriesDates = chartPrices.map(p => p.date)
-  const mmap = yahooPrices?.prices?.length
+  // Intraday series (1D/5D) have "YYYY-MM-DD HH:MM" dates — milestone dots don't apply
+  const isIntraday  = seriesDates.length > 0 && seriesDates[0].includes(' ')
+  const mmap = (yahooPrices?.prices?.length && !isIntraday)
     ? milestoneMapForSeries(historical, seriesDates)
-    : new Map(historical.map(m => [m.date, m]))
+    : isIntraday
+      ? new Map<string, Milestone>()
+      : new Map(historical.map(m => [m.date, m]))
 
   // Inverse map for chart reference line when hovering from timeline
   const labelToDate = useMemo(() => {
@@ -240,6 +244,13 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
                 <XAxis dataKey="date" tickLine={false} axisLine={false}
                   tick={{ fill: '#8b949e', fontSize: 9 }}
                   tickFormatter={d => {
+                    if (d.includes(' ')) {
+                      // Intraday: "2024-01-15 09:30"
+                      const [datePart, timePart] = d.split(' ')
+                      if (period === '1d') return timePart.slice(0, 5)
+                      const day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(datePart + 'T12:00:00').getDay()]
+                      return `${day} ${timePart.slice(0, 5)}`
+                    }
                     const [yr, mo] = d.split('-')
                     const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1]
                     return mo === '01' ? `${month} '${yr.slice(2)}` : month

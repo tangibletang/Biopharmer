@@ -16,30 +16,51 @@ YAHOO_SYMBOLS: dict[str, str] = {
     "RNA": "AVDL",
     "SRPT": "SRPT",
     "WVE": "WVE",
+    # Neurology
+    "BIIB": "BIIB",
+    "NVS":  "NVS",
+    "ABBV": "ABBV",
+    # Oncology
+    "MRK": "MRK",
+    "AZN": "AZN",
+    # Cardiometabolic
+    "LLY": "LLY",
+    "NVO": "NVO",
+}
+
+# Intraday interval per short period
+_INTRADAY_INTERVAL: dict[str, str] = {
+    "1d": "5m",
+    "5d": "1h",
 }
 
 
 def yahoo_symbol_for(ticker: str) -> str:
+    """Return the Yahoo Finance symbol for a ticker; falls back to the ticker itself."""
     t = ticker.upper()
-    if t not in YAHOO_SYMBOLS:
-        raise KeyError(t)
-    return YAHOO_SYMBOLS[t]
+    return YAHOO_SYMBOLS.get(t, t)
 
 
 def fetch_daily_closes(yahoo_symbol: str, *, period: str = "2y") -> list[dict[str, Any]]:
     """
-    Daily adjusted close series. ``period`` is yfinance-compatible: 1d,5d,1mo,3mo,6mo,1y,2y,5y,ytd,max
+    Price series for the given period.
+    Short periods (1d, 5d) use intraday intervals; all others use daily closes.
+    Date strings: "YYYY-MM-DD" for daily, "YYYY-MM-DD HH:MM" for intraday.
     """
     import yfinance as yf
 
+    interval = _INTRADAY_INTERVAL.get(period, "1d")
     t = yf.Ticker(yahoo_symbol)
-    hist = t.history(period=period, interval="1d", auto_adjust=True)
+    hist = t.history(period=period, interval=interval, auto_adjust=True)
     if hist.empty:
         raise ValueError(f"No price history returned for {yahoo_symbol}")
 
     out: list[dict[str, Any]] = []
     for idx, row in hist.iterrows():
-        d = idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx)[:10]
+        if hasattr(idx, "strftime"):
+            d = idx.strftime("%Y-%m-%d %H:%M") if interval != "1d" else idx.strftime("%Y-%m-%d")
+        else:
+            d = str(idx)[:16] if interval != "1d" else str(idx)[:10]
         close = float(row["Close"])
         out.append({"date": d, "price": round(close, 4)})
     return out
