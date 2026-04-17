@@ -122,7 +122,7 @@ function ChartTip({ active, payload, mmap }: {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function TimelineTab({ ticker }: { ticker: string }) {
+export default function TimelineTab({ ticker, onInvestigate }: { ticker: string; onInvestigate?: (focus: string) => void }) {
   const [period, setPeriod]     = useState<PeriodValue>('1y')
   const [filter, setFilter]     = useState<Filter>('all')
   const [selected, setSelected] = useState<Milestone | null>(null)
@@ -496,7 +496,7 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
         </div>
       </div>
 
-      {selected && <MilestoneModal milestone={selected} ticker={ticker} onClose={() => setSelected(null)} />}
+      {selected && <MilestoneModal milestone={selected} ticker={ticker} onClose={() => setSelected(null)} onInvestigate={onInvestigate} />}
     </div>
   )
 }

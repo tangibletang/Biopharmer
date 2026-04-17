@@ -26,9 +26,6 @@ from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import END, START, StateGraph
-from langgraph.types import interrupt
 
 from app.agents.war_room import search_scientific_peers
 from app.database import fetch_one
@@ -218,7 +215,7 @@ def load_context_node(state: WarRoomState) -> dict:
     return {"context": ctx}
 
 
-def orchestrator_node(state: WarRoomState) -> dict:
+async def orchestrator_node(state: WarRoomState) -> dict:
     """Reads user_focus (+ human_directive if steering) and injects 2–3 debate angles."""
     ctx_block = _context_block(state["context"])
     iteration = state.get("iterations", 0)
@@ -232,7 +229,7 @@ def orchestrator_node(state: WarRoomState) -> dict:
         else ""
     )
 
-    resp = _llm.invoke([
+    resp = await _llm.ainvoke([
         SystemMessage(content=(
             f"Today is {today}. You are an investment war room orchestrator for biotech diligence. "
             f"The investor's persona is: {persona}. Tailor the debate angles to what matters most "
@@ -276,8 +273,7 @@ async def explorer_node(state: WarRoomState) -> dict:
     n = min(3, len(EXPLORER_PERSONAS))
 
     async def run_one(label: str, persona_desc: str) -> dict:
-        resp = await asyncio.to_thread(
-            _llm_with_tools.invoke,
+        resp = await _llm_with_tools.ainvoke(
             [
                 SystemMessage(content=(
                     f"Today is {today}. You are {persona_desc}. "
@@ -319,8 +315,7 @@ async def critic_node(state: WarRoomState) -> dict:
     full_text = _transcript_text(transcript, truncate=400)
 
     async def run_critic(idx: int) -> dict:
-        resp = await asyncio.to_thread(
-            _llm.invoke,
+        resp = await _llm.ainvoke(
             [
                 SystemMessage(content=(
                     f"Today is {today}. You are a skeptical buy-side analyst. "
@@ -349,7 +344,7 @@ async def critic_node(state: WarRoomState) -> dict:
     }
 
 
-def generate_steering_options_node(state: WarRoomState) -> dict:
+async def generate_steering_options_node(state: WarRoomState) -> dict:
     """
     Fast routing agent (gpt-4o-mini) that:
     1. Produces a 1-2 sentence summary of what this round found (interim_summary)
@@ -362,7 +357,7 @@ def generate_steering_options_node(state: WarRoomState) -> dict:
     transcript_text = _transcript_text(state["transcript"], truncate=400)
     iteration = state.get("iterations", 0)
 
-    resp = _llm_fast.invoke([
+    resp = await _llm_fast.ainvoke([
         SystemMessage(content=(
             "You are a research routing agent for a biotech investment war room. "
             "Return a single JSON object — no markdown, no code fences — with two keys:\n"
@@ -420,22 +415,8 @@ def generate_steering_options_node(state: WarRoomState) -> dict:
     }
 
 
-def human_steering_node(state: WarRoomState) -> dict:
-    """
-    Interrupt point — pauses the graph and surfaces transcript + suggested_directions to the caller.
-    Resumed via Command(resume=<directive_string>).
-    """
-    directive = interrupt({
-        "message": "Round complete. Choose a suggested direction or type a custom one.",
-        "transcript": state["transcript"],
-        "suggested_directions": state.get("suggested_directions", []),
-        "iterations_completed": state["iterations"],
-        "max_iterations": state["max_iterations"],
-    })
-    return {"human_directive": directive or ""}
 
-
-def synthesizer_node(state: WarRoomState) -> dict:
+async def synthesizer_node(state: WarRoomState) -> dict:
     """
     Reads the final debate transcript and produces a research-question-framed synthesis.
     Output is investor-as-observer: findings about the investment thesis, not corporate directives.
@@ -457,7 +438,7 @@ def synthesizer_node(state: WarRoomState) -> dict:
         '}'
     )
 
-    resp = _llm.invoke([
+    resp = await _llm.ainvoke([
         SystemMessage(content=(
             f"Today is {today}. You are synthesizing a biotech investment debate for a {persona}. "
             "Output one JSON object only — no markdown, no code fences, no commentary before or after.\n\n"
@@ -501,46 +482,26 @@ def synthesizer_node(state: WarRoomState) -> dict:
     return {"synthesis": synthesis}
 
 
-# ── Routing ────────────────────────────────────────────────────────────────────
 
-def route_after_steering_options(state: WarRoomState) -> str:
-    if state["iterations"] < state["max_iterations"]:
-        return "human_steering"
-    return "synthesizer"
+# ── Direct async execution (no LangGraph runtime, no interrupt) ────────────────
+# LangGraph 1.1.6 + Python 3.10 cannot propagate var_child_runnable_config to
+# async node contexts, breaking interrupt(). We run nodes as plain coroutines
+# instead — same logic, zero LangGraph runtime dependency.
 
-
-# ── Graph assembly ─────────────────────────────────────────────────────────────
-
-def _build_graph() -> object:
-    graph = StateGraph(WarRoomState)
-
-    graph.add_node("load_context", load_context_node)
-    graph.add_node("orchestrator", orchestrator_node)
-    graph.add_node("explorer", explorer_node)
-    graph.add_node("critic", critic_node)
-    graph.add_node("generate_steering_options", generate_steering_options_node)
-    graph.add_node("human_steering", human_steering_node)
-    graph.add_node("synthesizer", synthesizer_node)
-
-    graph.add_edge(START, "load_context")
-    graph.add_edge("load_context", "orchestrator")
-    graph.add_edge("orchestrator", "explorer")
-    graph.add_edge("explorer", "critic")
-    graph.add_edge("critic", "generate_steering_options")
-    graph.add_conditional_edges(
-        "generate_steering_options",
-        route_after_steering_options,
-        {"human_steering": "human_steering", "synthesizer": "synthesizer"},
-    )
-    graph.add_edge("human_steering", "orchestrator")
-    graph.add_edge("synthesizer", END)
-
-    memory = MemorySaver()
-    return graph.compile(checkpointer=memory)
+_sessions: dict[str, WarRoomState] = {}
 
 
-# Singleton — compiled once at import time
-iterative_war_room = _build_graph()
+def _merge(state: WarRoomState, delta: dict) -> WarRoomState:
+    return {**state, **delta}  # type: ignore[return-value]
+
+
+async def _run_iteration(state: WarRoomState) -> WarRoomState:
+    """Run one full debate round: orchestrator → explorer → critic → steering options."""
+    state = _merge(state, await orchestrator_node(state))
+    state = _merge(state, await explorer_node(state))
+    state = _merge(state, await critic_node(state))
+    state = _merge(state, await generate_steering_options_node(state))
+    return state
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
@@ -552,8 +513,8 @@ async def start_war_room(
     user_persona: str = "Clinical Mechanism Analyst",
     max_iterations: int = 2,
 ) -> dict:
-    """Start a new iterative war room thread. Returns state after first interrupt or synthesis."""
-    initial: WarRoomState = {
+    """Start a new war room thread. Runs one iteration and pauses for steering (or completes)."""
+    state: WarRoomState = {
         "ticker": ticker.upper(),
         "user_focus": user_focus,
         "user_persona": user_persona,
@@ -566,23 +527,38 @@ async def start_war_room(
         "context": {},
         "synthesis": {},
     }
-    config = {"configurable": {"thread_id": thread_id}}
-    state = await iterative_war_room.ainvoke(initial, config=config)
+
+    # Load context (sync — no LLM)
+    state = _merge(state, load_context_node(state))
+
+    # Run first iteration
+    state = await _run_iteration(state)
+
+    # If max_iterations reached, synthesize immediately
+    if state["iterations"] >= state["max_iterations"]:
+        state = _merge(state, await synthesizer_node(state))
+
+    _sessions[thread_id] = state
     return _build_response(state, thread_id)
 
 
 async def resume_war_room(thread_id: str, human_directive: str) -> dict:
-    """Resume a paused war room thread. Empty directive is valid (continue without steering)."""
-    from langgraph.types import Command
-    config = {"configurable": {"thread_id": thread_id}}
-    state = await iterative_war_room.ainvoke(
-        Command(resume=human_directive),
-        config=config,
-    )
+    """Resume a paused thread with a human directive and run the next iteration."""
+    state = _sessions.get(thread_id)
+    if not state:
+        raise ValueError(f"Thread '{thread_id}' not found. It may have expired.")
+
+    state = _merge(state, {"human_directive": human_directive})
+    state = await _run_iteration(state)
+
+    if state["iterations"] >= state["max_iterations"]:
+        state = _merge(state, await synthesizer_node(state))
+
+    _sessions[thread_id] = state
     return _build_response(state, thread_id)
 
 
-def _build_response(state: dict, thread_id: str) -> dict:
+def _build_response(state: WarRoomState, thread_id: str) -> dict:
     is_complete = bool(state.get("synthesis"))
     return {
         "thread_id": thread_id,

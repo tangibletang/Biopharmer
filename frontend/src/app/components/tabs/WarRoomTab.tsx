@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { TranscriptMessage, WarRoomResponse, SynthesisOutput, PersistedResearch } from '../../types'
 import { displayTicker } from '../../types'
 
@@ -11,23 +11,91 @@ interface Props {
   saved?: PersistedResearch
   onSave?: (state: PersistedResearch) => void
   onSynthesis?: (ticker: string, actionableMetric: string) => void
+  prefillFocus?: string
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const USER_PERSONAS = [
-  'Clinical Mechanism Analyst',
-  'Quantitative Value Investor',
+  'Clinical Analyst',
   'Regulatory Hawk',
-  'Competitive Intelligence Analyst',
-  'Risk-Arbitrage Trader',
+  'Investor',
 ]
 
-const STARTER_PILLS = [
-  'Compare delivery toxicity between $DYNE and $RNA exon-skipping programs',
-  'What FDA label risks could re-rate $SRPT given its accelerated approval history?',
-  'How does $WVE micro-dystrophin differentiate vs. gene therapy peers on durability?',
-]
+// Per-ticker, per-persona starter questions
+const PERSONA_PILLS: Record<string, Record<string, string[]>> = {
+  DYNE: {
+    'Clinical Analyst': [
+      "How does DYNE's FORCE platform improve exon-skipping efficiency vs first-gen ASOs?",
+      "What dystrophin expression levels has DYNE achieved in Phase 1/2 vs the ELEVIDYS benchmark?",
+    ],
+    'Regulatory Hawk': [
+      "What PMR commitments would FDA likely require for a DYNE accelerated approval?",
+      "How does DYNE's regulatory strategy compare to SRPT's path to accelerated approval?",
+    ],
+    'Investor': [
+      "When could DYNE realistically file an NDA and what are the key de-risking milestones?",
+      "How does DYNE's cash runway compare to expected Phase 3 costs?",
+    ],
+  },
+  RNA: {
+    'Clinical Analyst': [
+      "How does the AOC platform's muscle delivery mechanism differ from traditional ASO approaches?",
+      "What do early AOC-1020 readouts imply about exon-skipping durability vs legacy programs?",
+    ],
+    'Regulatory Hawk': [
+      "What novel regulatory precedents apply to RNA's AOC platform as a first-in-class mechanism?",
+      "How might FDA evaluate AOC dystrophin expression data relative to approved exon-skippers?",
+    ],
+    'Investor': [
+      "What is the platform value of AOC technology beyond DMD if the lead program succeeds?",
+      "How does RNA's partnership structure affect the economics of any DMD approval?",
+    ],
+  },
+  SRPT: {
+    'Clinical Analyst': [
+      "What is the evidence base for ELEVIDYS functional outcomes beyond dystrophin expression?",
+      "How durable is ELEVIDYS gene therapy efficacy and what does long-term follow-up show?",
+    ],
+    'Regulatory Hawk': [
+      "What are the risks of ELEVIDYS accelerated approval conversion failing in the confirmatory trial?",
+      "How exposed is SRPT to label restrictions given the ongoing post-marketing study?",
+    ],
+    'Investor': [
+      "What is the current ELEVIDYS revenue run-rate and path to peak sales?",
+      "How does the UWash royalty burden and litigation risk affect SRPT's long-term margin profile?",
+    ],
+  },
+  WVE: {
+    'Clinical Analyst': [
+      "What clinical differentiation does WVE's stereopure chemistry offer over racemic exon-skippers?",
+      "What do PRECISION-DMD interim readouts imply about WVE's efficacy vs SRPT's exon-51 program?",
+    ],
+    'Regulatory Hawk': [
+      "How would FDA weigh WVE's stereopure ASO as a new molecular entity vs existing approvals?",
+      "What is WVE's regulatory risk profile if the confirmatory PRECISION-DMD trial misses endpoints?",
+    ],
+    'Investor': [
+      "What is WVE's capital position and when does the company need to raise or partner?",
+      "How does WVE's pipeline breadth in neurological diseases reduce or increase binary risk?",
+    ],
+  },
+}
+
+const DEFAULT_PILLS: Record<string, string[]> = {
+  'Clinical Analyst': [
+    'Compare delivery toxicity between $DYNE and $RNA exon-skipping programs',
+    'What FDA label risks could re-rate $SRPT given its accelerated approval history?',
+  ],
+  'Regulatory Hawk': [
+    "How does FDA's accelerated approval framework apply across DMD programs?",
+    'What post-marketing requirements distinguish the existing DMD approvals?',
+  ],
+  'Investor': [
+    'Which DMD program has the most de-risked path to NDA filing?',
+    'How does $WVE micro-dystrophin differentiate vs. gene therapy peers on durability?',
+  ],
+}
 
 const STATUS_MESSAGES = [
   'Orchestrator is wiring debate angles…',
@@ -249,25 +317,37 @@ function SteeringSection({
         </span>
       </div>
 
-      {pills.length > 0 && (
-        <div className="flex flex-col gap-2 mb-4">
-          {pills.map((pill, i) => (
-            <button
-              key={i}
-              onClick={() => submit(pill)}
-              disabled={loading}
-              className={[
-                'text-left text-xs px-3 py-2 rounded border transition-colors',
-                loading
-                  ? 'border-border text-muted cursor-not-allowed'
-                  : 'border-accent/35 text-accent hover:bg-accent/10',
-              ].join(' ')}
-            >
-              <span className="text-muted mr-2 text-[10px]">{i + 1}.</span>{pill}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="flex flex-col gap-2 mb-4">
+        {/* Continue as-is — always first */}
+        <button
+          onClick={() => submit('')}
+          disabled={loading}
+          className={[
+            'text-left text-xs px-3 py-2 rounded border transition-colors',
+            loading
+              ? 'border-border text-muted cursor-not-allowed'
+              : 'border-accent/35 text-accent hover:bg-accent/10',
+          ].join(' ')}
+        >
+          <span className="text-muted mr-2 text-[10px]">1.</span>Continue as-is — let agents decide the next angle
+        </button>
+
+        {pills.map((pill, i) => (
+          <button
+            key={i}
+            onClick={() => submit(pill)}
+            disabled={loading}
+            className={[
+              'text-left text-xs px-3 py-2 rounded border transition-colors',
+              loading
+                ? 'border-border text-muted cursor-not-allowed'
+                : 'border-accent/35 text-accent hover:bg-accent/10',
+            ].join(' ')}
+          >
+            <span className="text-muted mr-2 text-[10px]">{i + 2}.</span>{pill}
+          </button>
+        ))}
+      </div>
 
       <div className="flex gap-2">
         <input
@@ -295,31 +375,45 @@ function SteeringSection({
 }
 
 function ConfigForm({
+  ticker,
   focus, setFocus,
   persona, setPersona,
   maxIter, setMaxIter,
   onRun, disabled,
 }: {
+  ticker: string
   focus: string; setFocus: (v: string) => void
   persona: string; setPersona: (v: string) => void
   maxIter: number; setMaxIter: (v: number) => void
   onRun: (f?: string) => void
   disabled: boolean
 }) {
+  const pills = (PERSONA_PILLS[ticker.toUpperCase()]?.[persona] ?? DEFAULT_PILLS[persona]) ?? []
+
   return (
     <div className="space-y-4">
-      {/* Persona + iterations row */}
-      <div className="flex flex-wrap gap-4">
+      {/* Persona toggles + iterations row */}
+      <div className="flex flex-wrap items-end gap-4">
         <div className="flex-1 min-w-40">
-          <label className="block text-[10px] text-muted uppercase tracking-wider mb-1">Persona</label>
-          <select
-            value={persona}
-            onChange={e => setPersona(e.target.value)}
-            disabled={disabled}
-            className="w-full bg-canvas border border-border rounded px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-accent/60"
-          >
-            {USER_PERSONAS.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <label className="block text-[10px] text-muted uppercase tracking-wider mb-1.5">Persona</label>
+          <div className="flex gap-1 p-1 bg-canvas border border-border rounded-lg w-fit">
+            {USER_PERSONAS.map(p => (
+              <button
+                key={p}
+                onClick={() => setPersona(p)}
+                disabled={disabled}
+                className={[
+                  'px-3 py-1.5 rounded text-[11px] font-medium transition-all',
+                  persona === p
+                    ? 'bg-surface text-[#e6edf3] shadow-sm border border-border'
+                    : 'text-muted hover:text-[#e6edf3]',
+                  disabled ? 'cursor-not-allowed opacity-50' : '',
+                ].join(' ')}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="w-28">
           <label className="block text-[10px] text-muted uppercase tracking-wider mb-1">Iterations</label>
@@ -332,19 +426,21 @@ function ConfigForm({
         </div>
       </div>
 
-      {/* Starter pills */}
-      <div className="flex flex-wrap gap-2">
-        {STARTER_PILLS.map(pill => (
-          <button
-            key={pill}
-            onClick={() => { setFocus(pill); onRun(pill) }}
-            disabled={disabled}
-            className="text-[11px] text-accent border border-accent/30 rounded-full px-3 py-1 hover:bg-accent/10 transition-colors"
-          >
-            {pill}
-          </button>
-        ))}
-      </div>
+      {/* Starter pills — per ticker + persona */}
+      {pills.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          {pills.map(pill => (
+            <button
+              key={pill}
+              onClick={() => { setFocus(pill); onRun(pill) }}
+              disabled={disabled}
+              className="text-left text-[11px] text-accent border border-accent/25 rounded px-3 py-1.5 hover:bg-accent/10 transition-colors"
+            >
+              {pill}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Focus input */}
       <div className="flex gap-2">
@@ -376,22 +472,39 @@ function ConfigForm({
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export default function WarRoomTab({ ticker, saved, onSave, onSynthesis }: Props) {
-  const [focus, setFocus]           = useState(saved?.focus ?? '')
-  const [persona, setPersona]       = useState(USER_PERSONAS[0])
+export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefillFocus }: Props) {
+  // Prefill wins over saved focus on initial mount
+  const [focus, setFocus]           = useState(prefillFocus || saved?.focus || '')
+  const [persona, setPersona]       = useState(USER_PERSONAS[2]) // default: Investor
   const [maxIter, setMaxIter]       = useState(2)
-  const [phase, setPhase]           = useState<UIPhase>(derivePhase(saved?.result))
-  const [result, setResult]         = useState<WarRoomResponse | null>(saved?.result ?? null)
+  const [phase, setPhase]           = useState<UIPhase>(prefillFocus ? 'idle' : derivePhase(saved?.result))
+  const [result, setResult]         = useState<WarRoomResponse | null>(prefillFocus ? null : (saved?.result ?? null))
   const [statusTick, setStatusTick] = useState(0)
   const [error, setError]           = useState<string | null>(null)
 
-  // When ticker changes, restore that ticker's saved state
+  // When ticker actually changes, restore that ticker's saved state.
+  // Do not use a "first mount" flag: Strict Mode runs effects twice on mount, which would
+  // clear focus on the second run and wipe prefillFocus from "Research Pharm" navigation.
+  const prevTickerRef = useRef(ticker)
   useEffect(() => {
+    if (prevTickerRef.current === ticker) return
+    prevTickerRef.current = ticker
     setResult(saved?.result ?? null)
     setFocus(saved?.focus ?? '')
     setPhase(derivePhase(saved?.result))
     setError(null)
-  }, [ticker])                          // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ticker, saved])
+
+  // Handle prefillFocus changes after mount (e.g. clicking a second research angle)
+  const prefillConsumedRef = useRef<string | undefined>(prefillFocus)
+  useEffect(() => {
+    if (!prefillFocus || prefillFocus === prefillConsumedRef.current) return
+    prefillConsumedRef.current = prefillFocus
+    setFocus(prefillFocus)
+    setPhase('idle')
+    setResult(null)
+    setError(null)
+  }, [prefillFocus])
 
   const persist = (r: WarRoomResponse | null, f: string) => {
     onSave?.({ result: r, focus: f })
@@ -499,6 +612,7 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis }: Props
             </div>
           ) : (
             <ConfigForm
+              ticker={ticker}
               focus={focus} setFocus={setFocus}
               persona={persona} setPersona={setPersona}
               maxIter={maxIter} setMaxIter={setMaxIter}

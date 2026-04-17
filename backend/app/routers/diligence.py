@@ -7,6 +7,7 @@ POST /api/diligence/resume  — Resume a paused thread with a human directive
 
 from __future__ import annotations
 
+import traceback
 import uuid
 
 from fastapi import APIRouter, HTTPException
@@ -85,6 +86,7 @@ async def start_diligence(body: WarRoomStartRequest):
             max_iterations=body.max_iterations,
         )
     except Exception as exc:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return _coerce_response(raw)

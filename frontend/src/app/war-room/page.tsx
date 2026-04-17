@@ -266,6 +266,8 @@ function WarRoomContent() {
   const [dmdTab, setDmdTab]             = useState<DmdTab>('timeline')
   const [dmdCatalysts, setDmdCatalysts] = useState<Partial<Record<Ticker, string>>>({})
   const [dmdResearch, setDmdResearch]   = useState<Partial<Record<Ticker, PersistedResearch>>>({})
+  const [dmdPrefillFocus, setDmdPrefillFocus] = useState<string | undefined>(undefined)
+  const [dmdPrefillVersion, setDmdPrefillVersion] = useState(0)
 
   // Non-DMD state
   const defaultTicker = config.companies[0]?.ticker ?? 'BIIB'
@@ -273,6 +275,8 @@ function WarRoomContent() {
   const [sectorTab, setSectorTab]             = useState<'timeline' | 'research'>('timeline')
   const [sectorCatalysts, setSectorCatalysts] = useState<Record<string, string>>({})
   const [sectorResearch, setSectorResearch]   = useState<Record<string, PersistedResearch>>({})
+  const [sectorPrefillFocus, setSectorPrefillFocus] = useState<string | undefined>(undefined)
+  const [sectorPrefillVersion, setSectorPrefillVersion] = useState(0)
 
   const isDmd = sector === 'dmd'
 
@@ -359,13 +363,24 @@ function WarRoomContent() {
             </nav>
 
             <main className="flex-1 overflow-auto bg-canvas p-6">
-              {dmdTab === 'timeline' && <TimelineTab ticker={dmdTicker} />}
+              {dmdTab === 'timeline' && (
+                <TimelineTab
+                  ticker={dmdTicker}
+                  onInvestigate={(focus) => {
+                    setDmdPrefillFocus(focus)
+                    setDmdPrefillVersion(v => v + 1)
+                    setDmdTab('research')
+                  }}
+                />
+              )}
               {dmdTab === 'research' && (
                 <WarRoomTab
+                  key={`${dmdTicker}-p${dmdPrefillVersion}`}
                   ticker={dmdTicker}
                   saved={dmdResearch[dmdTicker]}
                   onSave={(state) => setDmdResearch(prev => ({ ...prev, [dmdTicker]: state }))}
                   onSynthesis={(t, catalyst) => setDmdCatalysts(prev => ({ ...prev, [t as Ticker]: catalyst }))}
+                  prefillFocus={dmdPrefillFocus}
                 />
               )}
             </main>
@@ -421,13 +436,24 @@ function WarRoomContent() {
         </nav>
 
         <main className="flex-1 overflow-auto bg-canvas p-6">
-          {sectorTab === 'timeline' && <TimelineTab ticker={sectorTicker} />}
+          {sectorTab === 'timeline' && (
+            <TimelineTab
+              ticker={sectorTicker}
+              onInvestigate={(focus) => {
+                setSectorPrefillFocus(focus)
+                setSectorPrefillVersion(v => v + 1)
+                setSectorTab('research')
+              }}
+            />
+          )}
           {sectorTab === 'research' && (
             <WarRoomTab
+              key={`${sectorTicker}-p${sectorPrefillVersion}`}
               ticker={sectorTicker}
               saved={sectorResearch[sectorTicker]}
               onSave={(state) => setSectorResearch(prev => ({ ...prev, [sectorTicker]: state }))}
               onSynthesis={(t, catalyst) => setSectorCatalysts(prev => ({ ...prev, [t]: catalyst }))}
+              prefillFocus={sectorPrefillFocus}
             />
           )}
         </main>
