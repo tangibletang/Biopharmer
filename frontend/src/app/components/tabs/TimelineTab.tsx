@@ -366,30 +366,51 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
                 </g>
               )}
 
-              {historical.map((m, i) => {
-                const x = dx(m.date), col = TYPE_COLOR[m.type], isHot = hovered === m.label
+              {/* Non-hovered dots first, then hovered dot last — SVG paints in order so hovered glow appears on top */}
+              {historical.filter(m => hovered !== m.label).map((m, i) => {
+                const x = dx(m.date), col = TYPE_COLOR[m.type]
                 return (
                   <g key={i} style={{ opacity: opa('historical'), transition: 'opacity 0.2s', pointerEvents: 'all', cursor: 'pointer' }}
                     onMouseEnter={() => setHover(m.label, 'timeline')}
                     onMouseLeave={() => setHover(null, null)}
                     onClick={() => setSelected(m)}>
                     <line x1={x} y1={SY-DR-2} x2={x} y2={SY-DR-CH} stroke={col} strokeWidth={1} strokeOpacity={0.35} />
-                    {isHot && <circle cx={x} cy={SY} r={DR+9} fill={col} fillOpacity={0.15} />}
-                    <circle cx={x} cy={SY} r={isHot ? DR+2 : DR} fill={col} stroke="#161b22" strokeWidth={2} />
+                    <circle cx={x} cy={SY} r={DR} fill={col} stroke="#161b22" strokeWidth={2} />
                   </g>
                 )
               })}
 
-              {projected.map((m, i) => {
-                const x = dx(m.date), col = TYPE_COLOR[m.type], isHot = hovered === m.label
+              {projected.filter(m => hovered !== m.label).map((m, i) => {
+                const x = dx(m.date), col = TYPE_COLOR[m.type]
                 return (
                   <g key={i} style={{ opacity: opa('projected'), transition: 'opacity 0.2s', pointerEvents: 'all', cursor: 'pointer' }}
                     onMouseEnter={() => setHover(m.label, 'timeline')}
                     onMouseLeave={() => setHover(null, null)}
                     onClick={() => setSelected(m)}>
                     <line x1={x} y1={SY+DR+2} x2={x} y2={SY+DR+CH} stroke={col} strokeWidth={1} strokeDasharray="3 3" strokeOpacity={0.35} />
-                    {isHot && <circle cx={x} cy={SY} r={DR+9} fill={col} fillOpacity={0.15} />}
-                    <circle cx={x} cy={SY} r={isHot ? DR+2 : DR} fill="#161b22" stroke={col} strokeWidth={isHot ? 2.5 : 2} strokeDasharray="4 2" />
+                    <circle cx={x} cy={SY} r={DR} fill="#161b22" stroke={col} strokeWidth={2} strokeDasharray="4 2" />
+                  </g>
+                )
+              })}
+
+              {/* Hovered dot rendered last — sits on top of everything else in the SVG */}
+              {[...historical, ...projected].filter(m => hovered === m.label).map(m => {
+                const x = dx(m.date), col = TYPE_COLOR[m.type], isHistorical = m.category === 'historical'
+                return (
+                  <g key={m.label} style={{ pointerEvents: 'all', cursor: 'pointer' }}
+                    onMouseEnter={() => setHover(m.label, 'timeline')}
+                    onMouseLeave={() => setHover(null, null)}
+                    onClick={() => setSelected(m)}>
+                    {isHistorical
+                      ? <line x1={x} y1={SY-DR-2} x2={x} y2={SY-DR-CH} stroke={col} strokeWidth={1} strokeOpacity={0.35} />
+                      : <line x1={x} y1={SY+DR+2} x2={x} y2={SY+DR+CH} stroke={col} strokeWidth={1} strokeDasharray="3 3" strokeOpacity={0.35} />
+                    }
+                    <circle cx={x} cy={SY} r={DR+9} fill={col} fillOpacity={0.15} />
+                    <circle cx={x} cy={SY} r={DR+5} fill={col} fillOpacity={0.2} />
+                    {isHistorical
+                      ? <circle cx={x} cy={SY} r={DR+2} fill={col} stroke="#161b22" strokeWidth={2} />
+                      : <circle cx={x} cy={SY} r={DR+2} fill="#161b22" stroke={col} strokeWidth={2.5} strokeDasharray="4 2" />
+                    }
                   </g>
                 )
               })}
@@ -403,10 +424,11 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
                   onMouseLeave={() => setHover(null, null)}
                   style={{
                     position: 'absolute', left: x - CW/2, top: SY - DR - CH - 4 - CARD_H,
-                    width: CW, height: CARD_H, opacity: opa('historical'), transition: 'all 0.15s',
-                    borderColor: isHot ? col+'80' : undefined,
-                    backgroundColor: isHot ? col+'0f' : undefined,
-                    boxShadow: isHot ? `0 0 12px ${col}30` : undefined,
+                    width: CW, height: CARD_H, opacity: isHot ? 1 : opa('historical'), transition: 'all 0.15s',
+                    zIndex: isHot ? 10 : 1,
+                    borderColor: isHot ? col : undefined,
+                    backgroundColor: isHot ? '#1c2128' : undefined,
+                    boxShadow: isHot ? `0 0 16px ${col}50, 0 0 0 1px ${col}40` : undefined,
                   }}
                   className="text-left bg-canvas border border-border rounded-lg p-2.5"
                 >
@@ -428,10 +450,11 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
                   onMouseLeave={() => setHover(null, null)}
                   style={{
                     position: 'absolute', left: x - CW/2, top: SY + DR + CH + 6,
-                    width: CW, height: CARD_H, opacity: opa('projected'), transition: 'all 0.15s',
-                    borderColor: isHot ? col+'80' : undefined,
-                    backgroundColor: isHot ? col+'0f' : undefined,
-                    boxShadow: isHot ? `0 0 12px ${col}30` : undefined,
+                    width: CW, height: CARD_H, opacity: isHot ? 1 : opa('projected'), transition: 'all 0.15s',
+                    zIndex: isHot ? 10 : 1,
+                    borderColor: isHot ? col : undefined,
+                    backgroundColor: isHot ? '#1c2128' : undefined,
+                    boxShadow: isHot ? `0 0 16px ${col}50, 0 0 0 1px ${col}40` : undefined,
                   }}
                   className="text-left bg-canvas border border-dashed border-border rounded-lg p-2.5"
                 >
