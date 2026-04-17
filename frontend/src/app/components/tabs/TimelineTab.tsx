@@ -131,9 +131,13 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
   const [pricesLoading, setPricesLoading] = useState(false)
   const [pricesError, setPricesError]     = useState<string | null>(null)
   const timelineScrollRef = useRef<HTMLDivElement>(null)
+  const hoverSrcRef       = useRef<HoverSrc>(null)
   const [todayStr, setTodayStr] = useState<string | null>(null)
 
-  const setHover = (label: string | null, src: HoverSrc) => setHovered(label)
+  const setHover = (label: string | null, src: HoverSrc) => {
+    hoverSrcRef.current = src
+    setHovered(label)
+  }
 
   useEffect(() => { setTodayStr(localDateISO(new Date())) }, [])
 
@@ -158,6 +162,18 @@ export default function TimelineTab({ ticker }: { ticker: string }) {
     }
     center(); requestAnimationFrame(center)
   }, [ticker, todayX])
+
+  // When a chart dot is hovered, smooth-scroll the timeline to center that event
+  useEffect(() => {
+    if (hoverSrcRef.current !== 'chart' || !hovered) return
+    const el = timelineScrollRef.current
+    if (!el) return
+    const m = data.milestones.find(ms => ms.label === hovered)
+    if (!m) return
+    const x = dx(m.date)
+    const target = Math.max(0, Math.min(x - el.clientWidth / 2, el.scrollWidth - el.clientWidth))
+    el.scrollTo({ left: target, behavior: 'smooth' })
+  }, [hovered])                         // eslint-disable-line react-hooks/exhaustive-deps
 
   const todayLegend = useMemo(() => {
     const d = new Date()
