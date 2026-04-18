@@ -132,6 +132,8 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const [pricesError, setPricesError]     = useState<string | null>(null)
   /** Last two daily closes (same as top strip) — 1D chart is intraday but header stats stay daily. */
   const [dailyStrip, setDailyStrip] = useState<{ last: number; prev: number } | null>(null)
+  /** True while 6mo fetch runs so we never show intraday first→last as a fake “daily” %. */
+  const [dailyStripSyncing, setDailyStripSyncing] = useState(false)
   const timelineScrollRef = useRef<HTMLDivElement>(null)
   const hoverSrcRef       = useRef<HoverSrc>(null)
   const [todayStr, setTodayStr] = useState<string | null>(null)
@@ -149,13 +151,17 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
     setYahooPrices(null)
     setPricesError(null)
     setDailyStrip(null)
+    setDailyStripSyncing(false)
   }, [ticker])
 
   useEffect(() => {
     let cancelled = false
     setPricesLoading(true)
     setPricesError(null)
-    if (period !== '1d') setDailyStrip(null)
+    if (period !== '1d') {
+      setDailyStrip(null)
+      setDailyStripSyncing(false)
+    }
     fetch(`${API}/api/prices/${ticker}?period=${period}`)
       .then(async r => { if (!r.ok) throw new Error(await r.text()); return r.json() as Promise<PricesResponse> })
       .then(d  => { if (!cancelled && d.prices?.length) setYahooPrices(d) })
@@ -169,9 +175,12 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
     if (period !== '1d' || !yahooPrices?.prices?.length) return
     if (!yahooPrices.prices[0].date.includes(' ')) {
       setDailyStrip(null)
+      setDailyStripSyncing(false)
       return
     }
     let cancelled = false
+    setDailyStrip(null)
+    setDailyStripSyncing(true)
     fetch(`${API}/api/prices/${ticker}?period=6mo`)
       .then(async r => (r.ok ? r.json() as Promise<PricesResponse> : null))
       .then(d => {
@@ -187,7 +196,11 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
         })
       })
       .catch(() => { if (!cancelled) setDailyStrip(null) })
-    return () => { cancelled = true }
+      .finally(() => { if (!cancelled) setDailyStripSyncing(false) })
+    return () => {
+      cancelled = true
+      setDailyStripSyncing(false)
+    }
   }, [ticker, period, yahooPrices])
 
   const todayX = todayStr ? dx(todayStr) : null
@@ -243,18 +256,23 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const priceMax = chartPrices.length ? Math.max(...chartPrices.map(p => p.price)) : 1
   const ppad     = Math.max((priceMax - priceMin) * 0.08, 0.01)
   const is1dIntraday = period === '1d' && seriesDates.length > 0 && seriesDates[0].includes(' ')
-  const latestPrice =
-    is1dIntraday && dailyStrip
+  // Never use intraday first→last for header on 1D — wait for dailyStrip (avoids wrong % then flash).
+  const latestPrice = !is1dIntraday
+    ? chartPrices.at(-1)?.price ?? null
+    : dailyStrip
       ? dailyStrip.last
-      : chartPrices.at(-1)?.price ?? null
-  const periodBaseline =
-    is1dIntraday && dailyStrip
+      : null
+  const periodBaseline = !is1dIntraday
+    ? chartPrices.at(0)?.price ?? null
+    : dailyStrip
       ? dailyStrip.prev
-      : chartPrices.at(0)?.price ?? null
+      : null
   const periodChange =
     latestPrice != null && periodBaseline != null ? latestPrice - periodBaseline : null
   const periodChangePct =
     periodChange != null && periodBaseline ? (periodChange / periodBaseline) * 100 : null
+  const show1dHeaderPlaceholder = is1dIntraday && !dailyStrip && (dailyStripSyncing || pricesLoading)
+  const show1dHeaderUnavailable = is1dIntraday && !dailyStrip && !dailyStripSyncing && !pricesLoading
 
   function opa(cat: 'historical' | 'projected') {
     return filter === 'all' || filter === cat ? 1 : 0.18
@@ -269,17 +287,20 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
           <div>
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-base font-bold font-mono text-[#e6edf3]">${displayTicker(ticker)}</span>
-              {latestPrice != null && (
+              {latestPrice != null && periodChange != null && periodChangePct != null && (
                 <>
                   <span className="text-lg font-semibold font-mono text-[#e6edf3]">${latestPrice.toFixed(2)}</span>
-                  {periodChange != null && periodChangePct != null && (
-                    <span className={['text-xs font-mono', periodChange >= 0 ? 'text-positive' : 'text-negative'].join(' ')}>
-                      {periodChange >= 0 ? '+' : ''}{periodChange.toFixed(2)} ({periodChange >= 0 ? '+' : ''}{periodChangePct.toFixed(2)}%)
-                    </span>
-                  )}
+                  <span className={['text-xs font-mono', periodChange >= 0 ? 'text-positive' : 'text-negative'].join(' ')}>
+                    {periodChange >= 0 ? '+' : ''}{periodChange.toFixed(2)} ({periodChange >= 0 ? '+' : ''}{periodChangePct.toFixed(2)}%)
+                  </span>
                 </>
               )}
-              {pricesLoading && <span className="text-[10px] text-muted animate-pulse">loading…</span>}
+              {(pricesLoading || show1dHeaderPlaceholder) && (
+                <span className="text-[10px] text-muted animate-pulse">loading…</span>
+              )}
+              {show1dHeaderUnavailable && (
+                <span className="text-[10px] text-muted">—</span>
+              )}
             </div>
             <div className="text-[10px] text-muted mt-0.5">
               {yahooPrices
