@@ -130,6 +130,8 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const [yahooPrices, setYahooPrices]     = useState<PricesResponse | null>(null)
   const [pricesLoading, setPricesLoading] = useState(false)
   const [pricesError, setPricesError]     = useState<string | null>(null)
+  /** Last two daily closes (same as top strip) — 1D chart is intraday but header stats stay daily. */
+  const [dailyStrip, setDailyStrip] = useState<{ last: number; prev: number } | null>(null)
   const timelineScrollRef = useRef<HTMLDivElement>(null)
   const hoverSrcRef       = useRef<HoverSrc>(null)
   const [todayStr, setTodayStr] = useState<string | null>(null)
@@ -146,12 +148,14 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   useEffect(() => {
     setYahooPrices(null)
     setPricesError(null)
+    setDailyStrip(null)
   }, [ticker])
 
   useEffect(() => {
     let cancelled = false
     setPricesLoading(true)
     setPricesError(null)
+    if (period !== '1d') setDailyStrip(null)
     fetch(`${API}/api/prices/${ticker}?period=${period}`)
       .then(async r => { if (!r.ok) throw new Error(await r.text()); return r.json() as Promise<PricesResponse> })
       .then(d  => { if (!cancelled && d.prices?.length) setYahooPrices(d) })
@@ -159,6 +163,32 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
       .finally(() => { if (!cancelled) setPricesLoading(false) })
     return () => { cancelled = true }
   }, [ticker, period])
+
+  // 1D view uses intraday bars for the chart, but header $ / % should match the **top strip** (last two daily closes).
+  useEffect(() => {
+    if (period !== '1d' || !yahooPrices?.prices?.length) return
+    if (!yahooPrices.prices[0].date.includes(' ')) {
+      setDailyStrip(null)
+      return
+    }
+    let cancelled = false
+    fetch(`${API}/api/prices/${ticker}?period=6mo`)
+      .then(async r => (r.ok ? r.json() as Promise<PricesResponse> : null))
+      .then(d => {
+        if (cancelled || !d?.prices?.length) return
+        const daily = d.prices.filter(p => !p.date.includes(' '))
+        if (daily.length < 2) {
+          setDailyStrip(null)
+          return
+        }
+        setDailyStrip({
+          prev: daily[daily.length - 2].price,
+          last: daily[daily.length - 1].price,
+        })
+      })
+      .catch(() => { if (!cancelled) setDailyStrip(null) })
+    return () => { cancelled = true }
+  }, [ticker, period, yahooPrices])
 
   const todayX = todayStr ? dx(todayStr) : null
   useLayoutEffect(() => {
@@ -212,10 +242,19 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const priceMin = chartPrices.length ? Math.min(...chartPrices.map(p => p.price)) : 0
   const priceMax = chartPrices.length ? Math.max(...chartPrices.map(p => p.price)) : 1
   const ppad     = Math.max((priceMax - priceMin) * 0.08, 0.01)
-  const latestPrice    = chartPrices.at(-1)?.price ?? null
-  const periodStart    = chartPrices.at(0)?.price ?? null
-  const periodChange   = latestPrice != null && periodStart != null ? latestPrice - periodStart : null
-  const periodChangePct = periodChange != null && periodStart ? (periodChange / periodStart) * 100 : null
+  const is1dIntraday = period === '1d' && seriesDates.length > 0 && seriesDates[0].includes(' ')
+  const latestPrice =
+    is1dIntraday && dailyStrip
+      ? dailyStrip.last
+      : chartPrices.at(-1)?.price ?? null
+  const periodBaseline =
+    is1dIntraday && dailyStrip
+      ? dailyStrip.prev
+      : chartPrices.at(0)?.price ?? null
+  const periodChange =
+    latestPrice != null && periodBaseline != null ? latestPrice - periodBaseline : null
+  const periodChangePct =
+    periodChange != null && periodBaseline ? (periodChange / periodBaseline) * 100 : null
 
   function opa(cat: 'historical' | 'projected') {
     return filter === 'all' || filter === cat ? 1 : 0.18
