@@ -13,15 +13,19 @@ interface PriceSummary {
   changePct: number
 }
 
+/** Last close vs prior daily close (1D %); uses 1mo daily series, skips intraday rows if present. */
 async function fetchPriceSummary(ticker: string): Promise<PriceSummary | null> {
   try {
-    const res = await fetch(`${API}/api/prices/${ticker}?period=6mo`)
+    const res = await fetch(`${API}/api/prices/${ticker}?period=1mo`)
     if (!res.ok) return null
     const data = await res.json()
-    const prices: { price: number }[] = data.prices ?? []
-    if (prices.length < 2) return null
-    const latest = prices[prices.length - 1].price
-    const prev   = prices[prices.length - 2].price
+    const raw: { date: string; price: number }[] = data.prices ?? []
+    const daily = raw.filter(p => !String(p.date).includes(' '))
+    const series = daily.length >= 2 ? daily : raw
+    if (series.length < 2) return null
+    const latest = series[series.length - 1].price
+    const prev   = series[series.length - 2].price
+    if (prev === 0) return null
     return {
       price:     latest,
       change:    latest - prev,
@@ -113,11 +117,9 @@ export default function Sidebar({ selected, onSelect, catalysts = {} }: Props) {
               <div className="flex items-center justify-between mt-1 pl-4">
                 <div className="text-[10px] text-muted leading-tight">{COMPANY_NAMES[t]}</div>
                 {summary && (
-                  <span className={[
-                    'text-[10px] font-mono',
-                    positive ? 'text-positive' : 'text-negative',
-                  ].join(' ')}>
-                    {positive ? '+' : ''}{summary.changePct.toFixed(2)}%
+                  <span className={['text-[10px] font-mono inline-flex items-center gap-1', positive ? 'text-positive' : 'text-negative'].join(' ')}>
+                    <span className="text-muted/80">1D</span>
+                    <span>{positive ? '+' : ''}{summary.changePct.toFixed(2)}%</span>
                   </span>
                 )}
               </div>

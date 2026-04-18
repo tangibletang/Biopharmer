@@ -1,33 +1,92 @@
 # Biopharmer
 
-**Biopharmer** is a research terminal for **biotech investing**: fund analysts, serious retail investors, and anyone who needs to connect **market behavior** to **mechanism-level science** without jumping between terminals, PDFs, and scattered databases. It is built as an MVP around a small **Duchenne muscular dystrophy (DMD)** micro-universe so responses stay grounded and fast.
+**Biopharmer** is a research workspace for **biotech investing**: fund analysts, serious retail investors, and anyone who needs to connect **market behavior** to **mechanism-level science** without jumping between terminals, PDFs, and scattered databases. The product is built around a **live Duchenne muscular dystrophy (DMD) coverage slice** (four names, timelines, prices) and a **multi-agent diligence loop**—the **Research Pharm**—that runs structured debate, critique, and synthesis on whatever you ask about a ticker.
 
 ---
 
-## Take-home alignment — Option A: Multi-agent scientific ideation
+## Option A — Multi-agent system for scientific ideation (how this repo answers the brief)
 
-This repository is a working prototype for **Option A** from the brief: *multiple agents collaborating on a problem—generating ideas, critiquing each other, and converging on ranked, actionable output with visible friction, not fake consensus.*
+The product is designed against **Option A**: *multiple agents collaborating on a research problem—generating ideas, critiquing each other, and converging on something useful.* The user poses a **question**; agents **explore independently**, **challenge each other’s reasoning**, and the system **distills** the conversation into **structured, actionable** output. **Think debate, not consensus**—the value is **friction between perspectives**, not a single smoothed summary.
 
-| Criterion | How Biopharmer implements it |
-|-----------|------------------------------|
-| **Real multi-agent orchestration** | The **War Room** pipeline is **not** one long chain of prompts. It runs **N parallel explorer agents** (distinct investment personas), then **N parallel critic passes**—each critic only sees its paired explorer—then a **merger** model that produces structured JSON (`ranked_directions`, bull/bear, actionable metric). Concurrency is **async `asyncio.gather`** over independent LLM calls (`backend/app/agents/parallel_debate.py`), so branches truly run in parallel up to API limits. |
-| **Visible, legible activity** | The **War Room** tab surfaces **per-branch explorer + critic text**, then **ranked directions** and **synthesis** first—users can read what each “agent” argued and how friction was resolved. |
-| **Specific, useful output** | Merger output is **schema-constrained** (ranked theses, risks, next step, bull/bear, one forward **actionable metric**), grounded in a **ticker-specific brief** built from DB mechanism text, clinical metrics, and peer list—not a generic summary. |
-| **Human intervention** | Users **choose parallelism** (`parallelism=1–5`) and the **ticker** (the “question” is effectively *diligence on this name in the DMD universe*). Full **steer / pin / kill thread** controls are specified in [`docs/OPTION_A_ROADMAP.md`](docs/OPTION_A_ROADMAP.md) (Phase 3) but are **not** shipped in this MVP—judgment call: ship narrow parallel debate + trace first. |
+**Scope tradeoff (same architecture, different domain):** Example prompts in the brief are *open-ended research* (“novel loss functions for small language models”, “approaches to causal inference in sparse time-series data”). Biopharmer **narrows the question space** to **investable biotech diligence** on a **ticker** in the DMD slice, so every run is grounded in **Postgres context, embeddings, and market-adjacent tools**—the same *orchestration pattern*, with **investment questions** instead of arbitrary ML theory. Example Research Pharm questions in that spirit:
 
-**What this adds beyond a generic multi-agent demo**
+- *“What would change my mind on regulatory risk for SRPT’s label before the next data cut?”*
+- *“How does DYNE’s exon-51 story compare to RNA’s AOC path on durability evidence—not headlines?”*
+- *“If PRECISION-DMD disappoints, what’s left of the bull case on mechanism alone?”*
 
-- **Domain grounding:** Embeddings + **pgvector** peers and **clinical_metrics** in Postgres seed every run—so “debate” is about a **real company thesis**, not an abstract prompt.
-- **Integrated context:** **Timeline** (price + milestones) and **Proximity Map** (mechanism similarity) sit beside War Room so finance and biology stay in one terminal.
-- **Narrow scope on purpose:** The “research question” is **ticker-scoped DMD diligence** rather than open-ended arXiv-style ideation—trading breadth for depth and inspectability within a **4-hour–style** slice.
+| What Option A asks for | What matters | How Biopharmer delivers |
+|------------------------|--------------|-------------------------|
+| **Real multi-agent orchestration** — not sequential prompting dressed up as agents | Independent branches, real parallelism, distinct roles | Each round: **orchestrator** → **three parallel explorers** (`asyncio.gather`) → **two parallel critics** → steering generator → optional **synthesizer**—not one chain-of-thought pretending to be a committee. |
+| **Visible, legible agent activity** | The user can follow what’s happening | **Transcript** with `role`, named `agent`, and **iteration**; UI shows per-round debate before the next steer. |
+| **Output that is specific and useful** — not generic summaries | Grounded, ranked or structured, actionable | **Schema-constrained synthesis** (summary, findings, investor considerations, watch item); prompts force **ticker + research question** alignment; **pgvector + clinical_metrics + tools** reduce generic fluff. |
+| **Human intervention** — steer, pin, kill threads | Scientist/investor steers without redeploying prompts | **Shipped:** steer via **suggested pills**, **custom directive**, **continue-as-is**, **persona**, **max iterations**, same **`thread_id`** across resumes. **Not yet:** **pin / kill** individual branches—see [`docs/OPTION_A_ROADMAP.md`](docs/OPTION_A_ROADMAP.md). |
+
+---
+
+## The Research Pharm: why the agent loop is the product
+
+The Research Pharm is not a chat sidebar. It is an **iterative, human-steered diligence engine** that sits at the center of Biopharmer’s value: you bring a **research question** and an **investor persona**, and the system runs **repeatable rounds** of orchestrated debate until you hit your iteration limit—then it delivers a **structured synthesis** (summary, key findings, investor considerations, one forward **watch item**).
+
+**What one “round” does**
+
+1. **Context load** — Pulls mechanism text, company name, clinical metrics, and **pgvector-ranked scientific peers** from Postgres for the chosen ticker.
+2. **Orchestrator** — Reads your question (and any **steering** you added after a prior round), tailors angles to your **persona**, and posts **2–3 combative debate angles** to the transcript.
+3. **Explorers (parallel)** — Up to **three** specialist explorers run **concurrently** (`asyncio.gather`). Each picks an angle aligned with its role and may call **tools** (see below). Their outputs are appended to the transcript as distinct voices.
+4. **Critics (parallel)** — **Two** adversarial critics attack the explorers’ logic for that round—missing data, regulatory risk, competition, valuation sensitivity—also in parallel.
+5. **Steering prep** — A fast model produces an **interim summary** of the round and **three suggested “next move” directives** (clickable pills in the UI) aligned with your persona.
+6. **Human checkpoint** — The run **pauses**. You choose how the next round should go: **continue as-is** (let the orchestrator improvise), pick a **suggested direction**, or type a **custom directive**. The backend resumes the same **thread** with your choice via `POST /api/diligence/resume`.
+7. **Synthesis** — After the configured number of rounds completes, a **synthesizer** turns the full transcript plus context into **JSON**: research summary, key findings, investor-stance considerations, and a single **watch list** line—grounded in what was actually argued, not generic company copy.
+
+So the “loop” is: **orchestrate → explore (tools) → criticize → summarize & suggest → *you steer* → repeat → synthesize.** Friction is intentional: you see **who said what**, you **inject judgment between rounds**, and the final output is **schema-shaped** for diligence, not a single blob of consensus.
+
+---
+
+## Agents and roles (who shows up in the transcript)
+
+| Role | Job |
+|------|-----|
+| **Orchestrator** | Frames 2–3 pointed debate angles for the round, respecting your persona and any human steering. |
+| **Explorers** | Three parallel specialists (from a fixed roster—e.g. mechanism & efficacy, clinical & regulatory, competitive landscape, safety & execution, valuation & catalysts—**three run per round**). They defend one angle each with tool-backed evidence when useful. |
+| **Critics** | Two parallel **skeptical buy-side** voices that stress-test the explorers’ arguments for the same round. |
+| **Steering / routing (fast model)** | Compresses the round into a short **interim summary** and drafts **three steering pills** for the UI. |
+| **Synthesizer** | After the last round, produces the final **structured** research output tied to your **research question**. |
+
+**User-facing personas** (selected in the UI) shape how the orchestrator and steering options are phrased—e.g. clinical depth vs. regulatory vs. risk-arb—so the same ticker can be run with different **lenses**.
+
+---
+
+## Tools the explorers can use
+
+Explorers share a tool-bound model (`gpt-4o` with tools). Available today:
+
+| Tool | Purpose |
+|------|---------|
+| **`pgvector_peers`** | Returns the closest **scientific peers** for the DMD ticker from **cosine similarity** over mechanism embeddings—similarity score plus key **clinical_metrics** fields (e.g. Emax, half-life, Grade 3+ AE rate) so debate stays comparable to your database. |
+| **`openfda_adverse_events`** | Queries **openFDA** drug/event data for a compound name—seriousness and reaction lines—when safety grounding matters. |
+
+Tools are invoked **only when they add evidence**; the prompt discourages tool spam. Domain grounding still comes from the **pre-loaded context block** (mechanism + clinical table + peer list) on every round.
+
+---
+
+## Human-in-the-loop: what you control
+
+- **Before a run:** **Ticker** (DMD universe), **research question**, **persona**, and **max iterations** (how many full orchestrator→explorer→critic cycles before automatic synthesis).
+- **Between rounds:** **Steering**—use a suggested pill, type a custom directive, or **continue as-is** (empty directive) so the orchestrator sets the next angles without a specific instruction.
+- **Thread continuity:** Each run has a **`thread_id`**; resume calls attach your steering to that thread so the transcript stays one continuous debate.
+
+Full **pin / kill / fork**-style controls are discussed in [`docs/OPTION_A_ROADMAP.md`](docs/OPTION_A_ROADMAP.md); the shipped MVP is this **narrow loop + visible transcript + steering**.
+
+---
+
+## Code pointers (Option A implementation)
+
+The iterative loop lives in [`backend/app/agents/iterative_war_room.py`](backend/app/agents/iterative_war_room.py). The HTTP API is [`backend/app/routers/diligence.py`](backend/app/routers/diligence.py): `POST /api/diligence/start`, `POST /api/diligence/resume`, `GET /api/diligence/personas`. **Session state** is **in-memory** keyed by `thread_id`—see [`backend/README.md`](backend/README.md) for deploy caveats.
 
 ---
 
 ## Product vision
 
-Biopharmer is meant to bridge **financial markets** and **clinical science** in one place. Price moves are shown next to the trial readouts, regulatory events, and mechanism context that plausibly drove them—so “why did the stock move?” becomes answerable from **structured data and embeddings**, not guesswork. Scientific peers are discovered with **vector similarity** over mechanism text, then compared on **standardized clinical metrics**. A **multi-agent “War Room”** runs structured exploration and critique over each name’s thesis, then synthesizes bull/bear angles and ranked directions—useful for **institutional-style risk framing** (what could break the story, and what to watch next), not for trading signals.
-
-Together, that satisfies the core criteria we care about: **verifiable catalyst–price context**, **quantitative peer comparison**, and **debate-style diligence** grounded in your database and models—not generic chat.
+Biopharmer bridges **financial markets** and **clinical science** in one place: price and milestones on a **timeline**, peer similarity on a **map**, and **diligence** in the Research Pharm—so “what should I believe about this name?” is answerable from **structured data, embeddings, and recorded multi-agent reasoning**, not a single generic chat turn.
 
 ---
 
@@ -36,8 +95,8 @@ Together, that satisfies the core criteria we care about: **verifiable catalyst�
 | Layer | Choices |
 |--------|--------|
 | **Frontend** | [Next.js](https://nextjs.org/) 14 (App Router), React 18, TypeScript, Tailwind CSS, [Recharts](https://recharts.org/) for charts and timeline visuals |
-| **Backend** | [FastAPI](https://fastapi.tiangolo.com/) (Python), [LangGraph](https://github.com/langchain-ai/langgraph) / LangChain for agent workflows |
-| **Data & ML** | [Supabase](https://supabase.com/) Postgres with **[pgvector](https://github.com/pgvector/pgvector)** for embedding similarity; OpenAI embeddings + chat models |
+| **Backend** | [FastAPI](https://fastapi.tiangolo.com/) (Python); agent loop implemented as **async node pipeline** with in-memory thread sessions (see `iterative_war_room.py`) |
+| **Data & ML** | [Supabase](https://supabase.com/) Postgres with **[pgvector](https://github.com/pgvector/pgvector)** for embedding similarity; OpenAI chat + embeddings |
 | **Market data** | [yfinance](https://github.com/ranaroussi/yfinance) (Yahoo) for daily prices; optional [Alpha Vantage](https://www.alphavantage.co/) when configured (see `backend/README.md`) |
 
 Secrets stay in **`.env` / `.env.local`** (not committed). API and schema details live in **`backend/README.md`** and **`backend/schema.sql`**.

@@ -18,15 +18,20 @@ interface PriceSummary {
   changePct: number
 }
 
+/** Last close and prior close % change (true 1D daily return — uses daily bars only, not intraday). */
 async function fetchPriceSummary(ticker: string): Promise<PriceSummary | null> {
   try {
-    const res = await fetch(`${API}/api/prices/${ticker}?period=6mo`)
+    const res = await fetch(`${API}/api/prices/${ticker}?period=1mo`)
     if (!res.ok) return null
     const data = await res.json()
-    const prices: { price: number }[] = data.prices ?? []
-    if (prices.length < 2) return null
-    const latest = prices[prices.length - 1].price
-    const prev   = prices[prices.length - 2].price
+    const raw: { date: string; price: number }[] = data.prices ?? []
+    // 1d/5d periods use intraday timestamps; 1mo is daily — keep only calendar-day rows for 1D move
+    const daily = raw.filter(p => !String(p.date).includes(' '))
+    const series = daily.length >= 2 ? daily : raw
+    if (series.length < 2) return null
+    const latest = series[series.length - 1].price
+    const prev   = series[series.length - 2].price
+    if (prev === 0) return null
     return { price: latest, changePct: ((latest - prev) / prev) * 100 }
   } catch {
     return null
@@ -143,8 +148,11 @@ function DmdCompanyStrip({
                   <div className="text-xs font-mono font-semibold" style={{ color: isActive ? color : '#e6edf3' }}>
                     ${summary.price.toFixed(2)}
                   </div>
-                  <div className={['text-[10px] font-mono', positive ? 'text-positive' : 'text-negative'].join(' ')}>
-                    {positive ? '+' : ''}{summary.changePct.toFixed(2)}%
+                  <div className="text-[10px] font-mono flex items-center justify-end gap-1">
+                    <span className="text-muted/80">1D</span>
+                    <span className={positive ? 'text-positive' : 'text-negative'}>
+                      {positive ? '+' : ''}{summary.changePct.toFixed(2)}%
+                    </span>
                   </div>
                 </div>
               ) : (

@@ -8,18 +8,20 @@ This document is the execution plan. It builds on the existing stack: **FastAPI*
 
 ---
 
-## Current state (baseline)
+## Current state (shipped)
 
+Aligned with the **Option A** brief in the root [`README.md`](../README.md) (*question → parallel exploration → critique → distill; debate not consensus; human steer*).
 
-| Area          | Today                                                                         |
-| ------------- | ----------------------------------------------------------------------------- |
-| Orchestration | Single linear graph: `fetch_context` → biologist → toxicologist → synthesizer |
-| Input         | Fixed **ticker** diligence, not free-form research questions                  |
-| Parallelism   | None (strictly sequential LLM steps)                                          |
-| Persistence   | No session/thread store for runs                                              |
-| UI            | War Room shows final steps + JSON, not a full trace or branches               |
-| APIs          | OpenAI + DB; “any API” is possible but not formalized as **tool adapters**    |
+| Area | Today |
+|------|--------|
+| **Orchestration** | **Iterative Research Pharm** in [`backend/app/agents/iterative_war_room.py`](../backend/app/agents/iterative_war_room.py): `load_context` → **orchestrator** → **parallel explorers** → **parallel critics** → **steering options** → pause; repeat; then **synthesizer** when `max_iterations` reached. |
+| **Input** | User **research question** + **ticker** (DMD universe) + **persona** + **max iterations** — not open-ended arXiv topics; intentional scope tradeoff for grounding. |
+| **Parallelism** | **Yes** — `asyncio.gather` for explorers and for critics each round. |
+| **Persistence** | **In-process** `_sessions` keyed by `thread_id` (lost on API restart). No DB-backed `research_sessions` writes yet. |
+| **UI** | **Research Pharm** tab: transcript, interim summary, steering pills, run/resume. Timeline + map elsewhere. |
+| **APIs** | `POST /api/diligence/start`, `POST /api/diligence/resume`, `GET /api/diligence/personas`. Explorers use **tools**: `pgvector_peers`, `openfda_adverse_events`. |
 
+**Legacy note:** Older docs referred to `GET /api/diligence/{ticker}` and `parallel_debate.py`; those paths are **not** the current implementation.
 
 ---
 
@@ -35,23 +37,23 @@ This document is the execution plan. It builds on the existing stack: **FastAPI*
 
 ## Phase 1 — Observable parallel run (MVP of “real” multi-agent)
 
-**Goal:** Prove parallel exploration + inspectable trace without full human-in-the-loop.
+**Goal:** Prove parallel exploration + inspectable trace; **debate-shaped** output.
 
-**Status (Phase 1, revised):** The parallel explorer → critic → merger stack lives inside **ticker-scoped War Room** (`GET /api/diligence/{ticker}`), not a separate open-ended Research UI. Implementation: `app/agents/parallel_debate.py`, `app/agents/ticker_war_room.py`. The standalone `/api/research/sessions` API and **Research** tab were removed in favor of stock-focused diligence.
+**Status:** **Delivered** in the **iterative Research Pharm** (`iterative_war_room.py` + `POST /api/diligence/start` / `resume`). Each *round* runs parallel explorers and parallel critics; final **synthesis JSON** replaces the older single-shot “merger matrix” shape.
 
 **Backend**
 
-- [x] Parallel **explorers** (investment personas) → parallel **critics** → **merger** JSON (`ranked_directions`, `bull_case`, `bear_case`, `actionable_metric`, `synthesis_note`).
-- [x] `GET /api/diligence/{ticker}?parallelism=1–5` — returns branches + ranked list + synthesis (no separate session poll).
-- [ ] Optional: persisted session IDs + `GET /api/research/sessions/{id}/stream` (SSE) if you want async UX later.
+- [x] Parallel **explorers** (specialist personas) → parallel **critics** → round **interim summary** + **three steering directions** → user **resume** with steering.
+- [x] **Structured synthesis** after last round: `research_summary`, `key_findings`, `investor_considerations`, `watch_list`.
+- [ ] Optional: persisted session IDs + SSE if you want async UX without polling.
 
 **Frontend**
 
-- [x] **War Room** tab — parallel branches control, branch trace, ranked directions, bull/bear matrix.
+- [x] **Research Pharm** — transcript, steering UI, synthesis panel.
 
-**Legacy:** `research_sessions` / `research_threads` / `research_messages` in `schema.sql` are optional; nothing in the current app writes to them. You can drop those tables in Supabase or leave them.
+**Legacy:** `research_sessions` / `research_threads` / `research_messages` in `schema.sql` are optional; nothing in the current app writes to them.
 
-**Done when:** A user can submit one open-ended question and see **N parallel threads** and a **structured ranked output**, with full message history in the API response.
+**Done when:** A user can submit a **research question** on a ticker and see **parallel agent turns**, **friction** between explorers and critics, and a **structured** final output—with **full message history** in the API response. *(Met for ticker-scoped diligence; open-ended ML-style questions are a non-goal for this product.)*
 
 ---
 
@@ -59,11 +61,12 @@ This document is the execution plan. It builds on the existing stack: **FastAPI*
 
 **Goal:** Iterative critique; optional escalation when disagreement or uncertainty is high.
 
-- Graph extension: `propose` → `attack` → `defend` → `judge` (or 2 rounds max), with **conditional edges** (e.g. only second round if judge confidence below threshold).
-- Store **round** index on `messages`.
-- Judge outputs: scores per thread (specificity, novelty, risk) — feed merger.
+**Status:** **Partially met** — the Research Pharm already runs **multiple rounds** (`max_iterations`) with **orchestrator → explorers → critics** each time and **human steering** between rounds. Remaining Phase 2 ideas:
 
-**Done when:** At least one run uses **multiple rounds** and persisted messages show round boundaries.
+- **Conditional edges** (e.g. second round only if a “judge” score is below threshold) — not implemented; every run does full rounds up to `max_iterations`.
+- **Persisted** `messages` with **round** index in Postgres — not implemented (in-memory only).
+
+**Done when (stretch):** Round boundaries and optional conditional branching are **durable** in DB and visible in an inspector UI.
 
 ---
 
@@ -114,7 +117,8 @@ This document is the execution plan. It builds on the existing stack: **FastAPI*
 ## Non-goals (initially)
 
 - Full autonomous web browsing without citations guardrails.
-- The parallel pipeline is **merged into War Room** (`/api/diligence/...`); further Option A work is session persistence, SSE, and human steering (Phase 2–3).
+- **Open-ended** “scientific ideation” prompts with no ticker/DB grounding (e.g. generic ML theory)—the **architecture** matches Option A; the **domain** is **biotech diligence** by design ([`README.md`](../README.md)).
+- Further Option A work: **durable** session store, **pin/kill** threads, SSE—see Phase 3–5.
 
 ---
 
@@ -128,7 +132,8 @@ This document is the execution plan. It builds on the existing stack: **FastAPI*
 
 ## References (in-repo)
 
-- Existing War Room graph: `backend/app/agents/war_room.py`
-- Peers / embeddings (retrieval pattern): `backend/app/routers/peers.py`, `backend/seed.py`
-- Product baseline: `project_spec.md`
+- **Iterative Research Pharm (Option A loop):** `backend/app/agents/iterative_war_room.py`
+- **Peer search helper (embeddings):** `backend/app/agents/war_room.py`
+- **Peers API:** `backend/app/routers/peers.py`, `backend/seed.py`
+- **Product baseline:** `project_spec.md`
 
