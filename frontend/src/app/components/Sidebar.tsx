@@ -4,37 +4,11 @@ import { useEffect, useState } from 'react'
 import type { Ticker } from '../types'
 import { displayTicker } from '../types'
 import { ALL_TICKERS, COMPANY_NAMES, TICKER_COLORS, CLINICAL_DATA } from '../mockData'
+import { fetchTickerStripPriceSummary } from '@/lib/tickerPriceStrip'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
-interface PriceSummary {
-  price: number
-  change: number  // absolute
-  changePct: number
-}
-
-/** Last close vs prior daily close (1D %); uses 1mo daily series, skips intraday rows if present. */
-async function fetchPriceSummary(ticker: string): Promise<PriceSummary | null> {
-  try {
-    const res = await fetch(`${API}/api/prices/${ticker}?period=1mo`)
-    if (!res.ok) return null
-    const data = await res.json()
-    const raw: { date: string; price: number }[] = data.prices ?? []
-    const daily = raw.filter(p => !String(p.date).includes(' '))
-    const series = daily.length >= 2 ? daily : raw
-    if (series.length < 2) return null
-    const latest = series[series.length - 1].price
-    const prev   = series[series.length - 2].price
-    if (prev === 0) return null
-    return {
-      price:     latest,
-      change:    latest - prev,
-      changePct: ((latest - prev) / prev) * 100,
-    }
-  } catch {
-    return null
-  }
-}
+type PriceSummary = NonNullable<Awaited<ReturnType<typeof fetchTickerStripPriceSummary>>>
 
 interface Props {
   selected: Ticker
@@ -48,7 +22,7 @@ export default function Sidebar({ selected, onSelect, catalysts = {} }: Props) {
   // Fetch prices for all tickers on mount
   useEffect(() => {
     for (const t of ALL_TICKERS) {
-      fetchPriceSummary(t).then(summary => {
+      fetchTickerStripPriceSummary(API, t).then(summary => {
         if (summary) setPrices(prev => ({ ...prev, [t]: summary }))
       })
     }
@@ -117,9 +91,8 @@ export default function Sidebar({ selected, onSelect, catalysts = {} }: Props) {
               <div className="flex items-center justify-between mt-1 pl-4">
                 <div className="text-[10px] text-muted leading-tight">{COMPANY_NAMES[t]}</div>
                 {summary && (
-                  <span className={['text-[10px] font-mono inline-flex items-center gap-1', positive ? 'text-positive' : 'text-negative'].join(' ')}>
-                    <span className="text-muted/80">1D</span>
-                    <span>{positive ? '+' : ''}{summary.changePct.toFixed(2)}%</span>
+                  <span className={['text-[10px] font-mono', positive ? 'text-positive' : 'text-negative'].join(' ')}>
+                    {positive ? '+' : ''}{summary.changePct.toFixed(2)}%
                   </span>
                 )}
               </div>
