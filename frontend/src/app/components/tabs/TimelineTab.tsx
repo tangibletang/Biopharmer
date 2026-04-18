@@ -271,7 +271,23 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
     latestPrice != null && periodBaseline != null ? latestPrice - periodBaseline : null
   const periodChangePct =
     periodChange != null && periodBaseline ? (periodChange / periodBaseline) * 100 : null
-  const show1dHeaderPlaceholder = is1dIntraday && !dailyStrip && (dailyStripSyncing || pricesLoading)
+
+  // Don’t show header $/% from a **stale** Yahoo series (wrong window) while a new period is loading.
+  const hasLivePrices = !!(yahooPrices?.prices?.length)
+  const liveSeriesAligned =
+    !hasLivePrices ||
+    (!!yahooPrices && !pricesLoading && yahooPrices.period === period)
+  const stripReadyFor1d = !is1dIntraday || !!dailyStrip
+  const showHeaderNumbers =
+    liveSeriesAligned &&
+    stripReadyFor1d &&
+    latestPrice != null &&
+    periodChange != null &&
+    periodChangePct != null
+  const showHeaderLoading =
+    pricesLoading ||
+    (!!yahooPrices && hasLivePrices && yahooPrices.period !== period) ||
+    (is1dIntraday && dailyStripSyncing && !dailyStrip)
   const show1dHeaderUnavailable = is1dIntraday && !dailyStrip && !dailyStripSyncing && !pricesLoading
 
   function opa(cat: 'historical' | 'projected') {
@@ -287,7 +303,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
           <div>
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-base font-bold font-mono text-[#e6edf3]">${displayTicker(ticker)}</span>
-              {latestPrice != null && periodChange != null && periodChangePct != null && (
+              {showHeaderNumbers && latestPrice != null && periodChange != null && periodChangePct != null && (
                 <>
                   <span className="text-lg font-semibold font-mono text-[#e6edf3]">${latestPrice.toFixed(2)}</span>
                   <span className={['text-xs font-mono', periodChange >= 0 ? 'text-positive' : 'text-negative'].join(' ')}>
@@ -295,7 +311,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                   </span>
                 </>
               )}
-              {(pricesLoading || show1dHeaderPlaceholder) && (
+              {showHeaderLoading && !showHeaderNumbers && (
                 <span className="text-[10px] text-muted animate-pulse">loading…</span>
               )}
               {show1dHeaderUnavailable && (
