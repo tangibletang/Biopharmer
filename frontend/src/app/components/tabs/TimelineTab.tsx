@@ -364,9 +364,9 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     const [yr, mo, dd] = d.split('-')
                     const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1]
                     // Short periods: show "Mar 18" so same-month ticks are distinguishable
-                    if (period === '1mo' || period === '3mo') return `${month} ${+dd}`
+                    if (period === '1mo') return `${month} ${+dd}`
                     // Multi-year: show year on every tick
-                    if (period === '5y' || period === 'max') return `${month} '${yr.slice(2)}`
+                    if (period === '5y') return `${month} '${yr.slice(2)}`
                     // Default: month name, with year annotation on January
                     return mo === '01' ? `${month} '${yr.slice(2)}` : month
                   }}
