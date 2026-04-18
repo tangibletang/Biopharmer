@@ -1,7 +1,7 @@
 """
 Phase 1 Seed Script — Biopharmer MVP
 Initializes the pgvector schema and populates the DMD micro-universe
-(DYNE, RNA, SRPT, WVE) with mechanism embeddings and mock clinical metrics.
+(DYNE, SRPT, WVE) with mechanism embeddings and mock clinical metrics.
 
 Usage:
     cp .env.example .env          # fill in your keys
@@ -96,38 +96,6 @@ COMPANIES = [
                 "months. Grade 3+ AE rate 6.2%; primary SAE was transient LFT elevation (n=1, "
                 "resolved). FDA Breakthrough Therapy Designation granted August 2025. BLA "
                 "submission for accelerated approval on track Q2 2026. Cash $1.1B at YE2025."
-            ),
-        },
-    },
-    {
-        "ticker": "RNA",
-        "company_name": "Avidity Biosciences (acquired by Novartis)",
-        "mechanism_text": (
-            "Avidity Biosciences' Antibody Oligonucleotide Conjugate (AOC) platform exploits TfR1 "
-            "for muscle-selective delivery of siRNA and ASO payloads. Del-zota (delpacibart "
-            "zotadirsen, AOC 1044) targets exon 44-amenable DMD mutations (~8% of patients). The "
-            "anti-TfR1 monoclonal antibody concentrates the oligonucleotide payload in skeletal "
-            "and cardiac muscle, bypassing the RES filtration that limits naked oligo delivery. "
-            "Avidity's platform also produced del-desiran for DM1, whose full results were "
-            "published in the New England Journal of Medicine in 2024. Novartis acquired Avidity "
-            "for $72/share ($12B) in October 2025; deal closed February 2026. Del-zota and del-"
-            "desiran are now being developed within Novartis."
-        ),
-        "clinical": {
-            "emax_pct": 25.0,
-            "half_life_days": 21.0,
-            "grade_3_ae_pct": 4.8,
-            "approval_stage": "Pre-BLA",
-            "mechanism_class": "AOC",
-            "eligible_patient_pct": 7.0,
-            "audit_text": (
-                "Del-zota (AOC 1044, exon 44 skip). EXPLORE44 Ph1/2 (n=enrolled ongoing): "
-                "1-year data (August 2025) showed mean 25% dystrophin of normal with near-"
-                "normalization of serum creatine kinase (80%+ reduction) and functional "
-                "improvements versus natural history. Breakthrough Therapy Designation. "
-                "Pre-BLA meeting with FDA completed October 2025 confirming accelerated approval "
-                "pathway. Grade 3+ AE rate 4.8% (infusion-related reactions). Novartis BLA "
-                "submission planned 2026. Avidity acquired by Novartis for $72/share in Feb 2026."
             ),
         },
     },
@@ -300,8 +268,8 @@ def main() -> None:
 
     print("\n" + "=" * 60)
     print("Seed complete. Tables populated:")
-    print("  • dmd_mechanisms  — 4 rows with 1536-dim embeddings")
-    print("  • clinical_metrics — 4 rows with mock Phase 1/2 data")
+    print("  • dmd_mechanisms  — 3 rows with 1536-dim embeddings")
+    print("  • clinical_metrics — 3 rows with mock Phase 1/2 data")
     print("=" * 60)
 
 

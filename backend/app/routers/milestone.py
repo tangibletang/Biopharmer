@@ -28,7 +28,7 @@ _llm = ChatOpenAI(
     api_key=os.environ["OPENAI_API_KEY"],
 )
 
-VALID_TICKERS = {"DYNE", "RNA", "SRPT", "WVE"}
+VALID_TICKERS = {"DYNE", "SRPT", "WVE"}
 
 
 # ── Request / Response ─────────────────────────────────────────────────────────

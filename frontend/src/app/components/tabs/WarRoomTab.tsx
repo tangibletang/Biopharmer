@@ -38,20 +38,6 @@ const PERSONA_PILLS: Record<string, Record<string, string[]>> = {
       "How does DYNE's cash runway compare to expected Phase 3 costs?",
     ],
   },
-  RNA: {
-    'Clinical Analyst': [
-      "How does the AOC platform's muscle delivery mechanism differ from traditional ASO approaches?",
-      "What do early AOC-1020 readouts imply about exon-skipping durability vs legacy programs?",
-    ],
-    'Regulatory Hawk': [
-      "What novel regulatory precedents apply to RNA's AOC platform as a first-in-class mechanism?",
-      "How might FDA evaluate AOC dystrophin expression data relative to approved exon-skippers?",
-    ],
-    'Investor': [
-      "What is the platform value of AOC technology beyond DMD if the lead program succeeds?",
-      "How does RNA's partnership structure affect the economics of any DMD approval?",
-    ],
-  },
   SRPT: {
     'Clinical Analyst': [
       "What is the evidence base for ELEVIDYS functional outcomes beyond dystrophin expression?",
@@ -84,7 +70,7 @@ const PERSONA_PILLS: Record<string, Record<string, string[]>> = {
 
 const DEFAULT_PILLS: Record<string, string[]> = {
   'Clinical Analyst': [
-    'Compare delivery toxicity between $DYNE and $RNA exon-skipping programs',
+    'Compare delivery toxicity between $DYNE and $WVE exon-skipping programs',
     'What FDA label risks could re-rate $SRPT given its accelerated approval history?',
   ],
   'Regulatory Hawk': [

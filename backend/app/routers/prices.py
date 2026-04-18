@@ -13,7 +13,7 @@ from app.yahoo_prices import yahoo_symbol_for
 
 router = APIRouter()
 
-VALID = {"DYNE", "RNA", "SRPT", "WVE"}
+VALID = {"DYNE", "SRPT", "WVE"}
 
 ALLOWED_PERIODS = frozenset({"1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "ytd", "max"})
 

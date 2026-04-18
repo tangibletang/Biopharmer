@@ -13,16 +13,6 @@ export const CLINICAL_DATA: Record<Ticker, ClinicalSnapshot> = {
     audit_text:
       'Z-rostudirsen (DYNE-251, exon 51 skip). DELIVER REC topline: primary endpoint met — 5.46% dystrophin at 6 months (muscle content-adjusted, p<0.0001), 7-fold change from baseline; 8.72% unadjusted. Unprecedented functional improvement at 24 months. BTD granted Aug 2025. BLA submission Q2 2026.',
   },
-  RNA: {
-    emax_pct: 25.0,
-    half_life_days: 21.0,
-    grade_3_ae_pct: 4.8,
-    approval_stage: 'Pre-BLA',
-    mechanism_class: 'AOC',
-    eligible_patient_pct: 7.0,
-    audit_text:
-      'Del-zota (delpacibart zotadirsen, AOC 1044, exon 44 skip). EXPLORE44 Ph1/2: 25% mean dystrophin production + near-normalization of creatine kinase at 1 year. Breakthrough Therapy Designation. Pre-BLA meeting with FDA (Oct 2025) confirmed accelerated approval pathway. Novartis acquired Avidity Biosciences for $72/share ($12B) Oct 2025; deal closed Feb 2026.',
-  },
   SRPT: {
     emax_pct: 28.1,
     half_life_days: 365.0,
@@ -49,14 +39,12 @@ export const CLINICAL_DATA: Record<Ticker, ClinicalSnapshot> = {
 
 export const COMPANY_NAMES: Record<Ticker, string> = {
   DYNE: 'Dyne Therapeutics',
-  RNA:  'Avidity Biosciences',
   SRPT: 'Sarepta Therapeutics',
   WVE:  'Wave Life Sciences',
 }
 
 export const TICKER_COLORS: Record<Ticker, string> = {
   DYNE: '#58a6ff',
-  RNA:  '#3fb950',
   SRPT: '#d2a8ff',
   WVE:  '#ffa657',
 }
@@ -126,66 +114,6 @@ const DYNE_PRICES: StockPoint[] = [
   { date: '2026-04-06', price: 18.68 }, { date: '2026-04-13', price: 19.00 },
 ]
 
-// RNA = Avidity Biosciences (ticker RNAM post-Novartis acquisition close Feb 2026)
-const RNA_PRICES: StockPoint[] = [
-  { date: '2024-01-01', price: 9.65 },  { date: '2024-01-08', price: 11.35 },
-  { date: '2024-01-15', price: 10.16 }, { date: '2024-01-22', price: 12.04 },
-  { date: '2024-01-29', price: 11.63 }, { date: '2024-02-05', price: 13.35 },
-  { date: '2024-02-12', price: 14.18 }, { date: '2024-02-19', price: 14.04 },
-  { date: '2024-02-26', price: 20.11 }, { date: '2024-03-04', price: 21.46 },
-  { date: '2024-03-11', price: 24.42 }, { date: '2024-03-18', price: 23.70 },
-  { date: '2024-03-25', price: 25.52 }, { date: '2024-04-01', price: 24.63 },
-  { date: '2024-04-08', price: 24.09 }, { date: '2024-04-15', price: 22.73 },
-  { date: '2024-04-22', price: 24.36 }, { date: '2024-04-29', price: 26.45 },
-  { date: '2024-05-06', price: 25.96 }, { date: '2024-05-13', price: 29.50 },
-  { date: '2024-05-20', price: 27.45 }, { date: '2024-05-27', price: 26.86 },
-  { date: '2024-06-03', price: 26.60 }, { date: '2024-06-10', price: 39.64 },
-  { date: '2024-06-17', price: 39.00 }, { date: '2024-06-24', price: 40.85 },
-  { date: '2024-07-01', price: 39.00 }, { date: '2024-07-08', price: 44.80 },
-  { date: '2024-07-15', price: 45.12 }, { date: '2024-07-22', price: 48.14 },
-  { date: '2024-07-29', price: 41.27 }, { date: '2024-08-05', price: 46.95 },
-  { date: '2024-08-12', price: 44.98 }, { date: '2024-08-19', price: 43.52 },
-  { date: '2024-08-26', price: 44.00 }, { date: '2024-09-02', price: 40.46 },
-  { date: '2024-09-09', price: 41.71 }, { date: '2024-09-16', price: 44.48 },
-  { date: '2024-09-23', price: 42.33 }, { date: '2024-09-30', price: 47.30 },
-  { date: '2024-10-07', price: 46.60 }, { date: '2024-10-14', price: 50.45 },
-  { date: '2024-10-21', price: 45.11 }, { date: '2024-10-28', price: 41.87 },
-  { date: '2024-11-04', price: 46.72 }, { date: '2024-11-11', price: 42.18 },
-  { date: '2024-11-18', price: 43.25 }, { date: '2024-11-25', price: 43.03 },
-  { date: '2024-12-02', price: 38.27 }, { date: '2024-12-09', price: 32.49 },
-  { date: '2024-12-16', price: 31.82 }, { date: '2024-12-23', price: 30.11 },
-  { date: '2024-12-30', price: 30.50 }, { date: '2025-01-06', price: 29.46 },
-  { date: '2025-01-13', price: 28.92 }, { date: '2025-01-20', price: 29.67 },
-  { date: '2025-01-27', price: 32.93 }, { date: '2025-02-03', price: 34.92 },
-  { date: '2025-02-10', price: 32.31 }, { date: '2025-02-17', price: 31.12 },
-  { date: '2025-02-24', price: 30.64 }, { date: '2025-03-03', price: 30.29 },
-  { date: '2025-03-10', price: 31.11 }, { date: '2025-03-17', price: 30.84 },
-  { date: '2025-03-24', price: 31.60 }, { date: '2025-03-31', price: 26.57 },
-  { date: '2025-04-07', price: 25.58 }, { date: '2025-04-14', price: 26.66 },
-  { date: '2025-04-21', price: 30.84 }, { date: '2025-04-28', price: 32.20 },
-  { date: '2025-05-05', price: 27.87 }, { date: '2025-05-12', price: 30.35 },
-  { date: '2025-05-19', price: 30.58 }, { date: '2025-05-26', price: 30.98 },
-  { date: '2025-06-02', price: 36.24 }, { date: '2025-06-09', price: 31.37 },
-  { date: '2025-06-16', price: 29.31 }, { date: '2025-06-23', price: 29.03 },
-  { date: '2025-06-30', price: 29.17 }, { date: '2025-07-07', price: 31.45 },
-  { date: '2025-07-14', price: 33.76 }, { date: '2025-07-21', price: 36.27 },
-  { date: '2025-07-28', price: 35.92 }, { date: '2025-08-04', price: 46.29 },
-  { date: '2025-08-11', price: 46.47 }, { date: '2025-08-18', price: 46.35 },
-  { date: '2025-08-25', price: 46.58 }, { date: '2025-09-01', price: 50.36 },
-  { date: '2025-09-08', price: 44.74 }, { date: '2025-09-15', price: 41.06 },
-  { date: '2025-09-22', price: 42.95 }, { date: '2025-09-29', price: 47.00 },
-  { date: '2025-10-06', price: 49.77 }, { date: '2025-10-13', price: 47.89 },
-  { date: '2025-10-20', price: 49.15 }, { date: '2025-10-27', price: 69.85 },
-  { date: '2025-11-03', price: 69.84 }, { date: '2025-11-10', price: 70.80 },
-  { date: '2025-11-17', price: 70.56 }, { date: '2025-11-24', price: 71.70 },
-  { date: '2025-12-01', price: 71.63 }, { date: '2025-12-08', price: 71.83 },
-  { date: '2025-12-15', price: 72.34 }, { date: '2025-12-22', price: 72.13 },
-  { date: '2025-12-29', price: 72.10 }, { date: '2026-01-05', price: 72.37 },
-  { date: '2026-01-12', price: 72.51 }, { date: '2026-01-19', price: 72.60 },
-  { date: '2026-01-26', price: 72.57 }, { date: '2026-02-02', price: 72.90 },
-  { date: '2026-02-09', price: 72.87 }, { date: '2026-02-16', price: 71.40 },
-  { date: '2026-02-23', price: 71.34 }, { date: '2026-03-02', price: 71.34 },
-]
 
 const SRPT_PRICES: StockPoint[] = [
   { date: '2024-01-01', price: 97.34 },  { date: '2024-01-08', price: 116.80 },
@@ -418,80 +346,6 @@ const DYNE_MILESTONES: Milestone[] = [
   },
 ]
 
-const RNA_MILESTONES: Milestone[] = [
-  // ── Historical ──────────────────────────────────────────────────────────
-  {
-    date: '2024-02-26',
-    label: 'MARINA-OLE Del-Desiran Long-Term Data',
-    detail: 'Avidity presented new long-term data from the MARINA open-label extension (OLE) for del-desiran (AOC 1001) in DM1 at a major medical conference. Results showed reversal of disease progression across vHOT, muscle strength, and activities of daily living. Cross-indication AOC platform validation drove a 43% surge in RNA stock.',
-    type: 'positive',
-    category: 'historical',
-  },
-  {
-    date: '2024-06-10',
-    label: 'MARINA NEJM Publication + Phase 3 Announced',
-    detail: 'Full MARINA Phase 2 results for del-desiran published in The New England Journal of Medicine — a landmark for RNA therapeutics. Simultaneously, Avidity announced Phase 3 design for del-desiran (DM1) and shared positive preclinical del-zota (AOC 1044) DMD data. RNA surged 49% on the week, one of the largest single-week moves in biotech that year.',
-    type: 'positive',
-    category: 'historical',
-  },
-  {
-    date: '2024-07-22',
-    label: 'Del-Zota EXPLORE44 Phase 1 First-Patient Dosed',
-    detail: 'Avidity dosed the first patient in the EXPLORE44 Phase 1/2 trial of del-zota (AOC 1044) for DMD patients amenable to exon 44 skipping (~8% of DMD). Early PK confirmed TfR1-mediated muscle uptake. RNA reached a then-ATH of $50.45 as investors priced in a competitive DMD platform alongside the de-risked DM1 program.',
-    type: 'positive',
-    category: 'historical',
-  },
-  {
-    date: '2024-10-14',
-    label: 'EXPLORE44 Interim — Safety & Early Dystrophin Signal',
-    detail: 'Avidity reported interim safety data from EXPLORE44 showing clean safety profile at multiple dose cohorts and early dystrophin signal detectable above baseline. The company signaled a 6-month efficacy readout in 2025. RNA briefly cleared $50 for the first time as both the DM1 NDA and DMD Ph2 progression became near-term catalysts.',
-    type: 'positive',
-    category: 'historical',
-  },
-  {
-    date: '2025-01-27',
-    label: 'EXPLORE44 6-Month Del-Zota Efficacy Data',
-    detail: 'Avidity reported 6-month EXPLORE44 Phase 1/2 del-zota data showing near-normalization of serum creatine kinase (a muscle damage biomarker) and initial dystrophin expression. CK reduction of 80%+ confirmed robust muscle delivery. Full efficacy dose-ranging data expected H2 2025.',
-    type: 'positive',
-    category: 'historical',
-  },
-  {
-    date: '2025-08-04',
-    label: 'EXPLORE44 1-Year Data — 25% Dystrophin',
-    detail: 'Avidity announced positive 1-year Phase 2 EXPLORE44 data for del-zota: mean 25% dystrophin of normal with sustained CK normalization and functional improvements versus natural history. Breakthrough Therapy Designation confirmed. Pre-BLA meeting with FDA scheduled for Oct 2025. RNA jumped 29% on the week.',
-    type: 'positive',
-    category: 'historical',
-  },
-  {
-    date: '2025-10-27',
-    label: 'Novartis Acquires Avidity at $72/Share ($12B)',
-    detail: 'Novartis announced a definitive merger agreement to acquire Avidity Biosciences for $72.00/share in cash, valuing Avidity at ~$12B — the largest biotech M&A deal of 2025. The price represented a 46% premium to the prior close. Del-zota\'s DMD program and the del-desiran DM1 NDA were primary acquisition rationale. RNA surged 43% in a single session.',
-    type: 'positive',
-    category: 'historical',
-  },
-  {
-    date: '2026-02-02',
-    label: 'Merger Close Approaching — Trading at Tender Price',
-    detail: 'Avidity common stock trading as merger arb at ~$72.90, reflecting near-certainty of deal close (all regulatory approvals received, shareholder vote passed). Early-stage cardiology programs being spun into RNAM (SpinCo) ahead of transaction closing. Final days of independent Avidity trading.',
-    type: 'neutral',
-    category: 'historical',
-  },
-  // ── Projected ───────────────────────────────────────────────────────────
-  {
-    date: '2026-05-01',
-    label: 'Del-Zota BLA Submission by Novartis',
-    detail: 'Novartis expected to submit a BLA for del-zota in DMD (exon 44) under accelerated approval following confirmed FDA alignment from the Oct 2025 pre-BLA meeting. The program carries Breakthrough Therapy Designation. As part of a $600B+ pharma, del-zota will benefit from Novartis\'s neuromuscular commercial infrastructure.',
-    type: 'positive',
-    category: 'projected',
-  },
-  {
-    date: '2027-03-01',
-    label: 'Del-Zota PDUFA / Accelerated Approval Decision',
-    detail: 'Anticipated FDA action date for del-zota (delpacibart zotadirsen) in exon 44-amenable DMD. Approval would give Novartis a complementary exon 44 asset to pair with any future gene therapy portfolio, and validate the AOC muscle-targeting platform across two indications (DMD + DM1). Del-desiran DM1 NDA review also ongoing in parallel.',
-    type: 'positive',
-    category: 'projected',
-  },
-]
 
 const SRPT_MILESTONES: Milestone[] = [
   // ── Historical ──────────────────────────────────────────────────────────
@@ -688,13 +542,6 @@ export const TICKER_DATA: Record<Ticker, TickerMeta> = {
     prices: DYNE_PRICES,
     milestones: DYNE_MILESTONES,
   },
-  RNA: {
-    ticker: 'RNA',
-    company_name: COMPANY_NAMES.RNA,
-    color: TICKER_COLORS.RNA,
-    prices: RNA_PRICES,
-    milestones: RNA_MILESTONES,
-  },
   SRPT: {
     ticker: 'SRPT',
     company_name: COMPANY_NAMES.SRPT,
@@ -711,4 +558,4 @@ export const TICKER_DATA: Record<Ticker, TickerMeta> = {
   },
 }
 
-export const ALL_TICKERS: Ticker[] = ['DYNE', 'RNA', 'SRPT', 'WVE']
+export const ALL_TICKERS: Ticker[] = ['DYNE', 'SRPT', 'WVE']

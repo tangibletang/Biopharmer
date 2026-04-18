@@ -13,7 +13,7 @@ from app.models import ClinicalSnapshot, PeerResult, PeersResponse
 
 router = APIRouter()
 
-VALID_TICKERS = {"DYNE", "RNA", "SRPT", "WVE"}
+VALID_TICKERS = {"DYNE", "SRPT", "WVE"}
 
 
 @router.get("/peers/{ticker}", response_model=PeersResponse)

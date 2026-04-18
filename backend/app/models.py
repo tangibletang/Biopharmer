@@ -102,7 +102,7 @@ class StockPricePoint(BaseModel):
 class PricesResponse(BaseModel):
     ticker: str
     yahoo_symbol: str = Field(
-        description="Listing symbol passed to the provider (e.g. RNA → AVDL).",
+        description="Listing symbol passed to the provider (e.g. DYNE → DYN).",
     )
     provider: str = Field(
         description="Which backend filled the series: alpha_vantage or yahoo_finance.",

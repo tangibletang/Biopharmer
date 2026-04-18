@@ -71,7 +71,7 @@ function buildResearchAngles(milestone: Milestone, ticker: string) {
 
   // Angle 3 — materiality, always specific to the detail
   const materiality = detail.length > 80 ? detail.slice(0, 120) + '…' : detail
-  const materialQ = `How material is "${label}" to $${ticker}'s commercial trajectory? Specifically: ${materiality} — does this change the peak sales ceiling, addressable patient population, or competitive positioning versus DYNE, RNA, and WVE?`
+  const materialQ = `How material is "${label}" to $${ticker}'s commercial trajectory? Specifically: ${materiality} — does this change the peak sales ceiling, addressable patient population, or competitive positioning versus DYNE, SRPT, and WVE?`
 
   return [
     { label: 'What is the precedent?',           question: precedentQ  },

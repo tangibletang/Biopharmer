@@ -1,4 +1,4 @@
-export type Ticker = 'DYNE' | 'RNA' | 'SRPT' | 'WVE'
+export type Ticker = 'DYNE' | 'SRPT' | 'WVE'
 
 /** Nasdaq-style symbol for UI labels (Dyne is **DYN**). API paths still use the in-app id `DYNE`. */
 export function displayTicker(t: Ticker | string): string {

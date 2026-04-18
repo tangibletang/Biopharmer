@@ -155,10 +155,6 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   }, [ticker])
 
   useEffect(() => {
-    // RNA (Avidity) was acquired by Novartis and went private in early 2026.
-    // The current Yahoo "RNA" ticker is a different entity — use embedded mock data
-    // so milestones overlay correctly against Avidity's actual trading history.
-    if (ticker === 'RNA') { setPricesLoading(false); return }
     let cancelled = false
     setPricesLoading(true)
     setPricesError(null)
@@ -323,26 +319,22 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
               )}
             </div>
             <div className="text-[10px] text-muted mt-0.5">
-              {ticker === 'RNA'
-                ? 'Embedded · Avidity historical (delisted Feb 2026)'
-                : yahooPrices
-                  ? `${yahooPrices.yahoo_symbol} · ${PERIODS.find(p => p.value === yahooPrices.period)?.label ?? yahooPrices.period} · ${chartPrices.length} pts · ${priceProviderLabel(yahooPrices.provider)}`
-                  : pricesError ? 'Showing embedded data' : 'Embedded sample'}
+              {yahooPrices
+                ? `${yahooPrices.yahoo_symbol} · ${PERIODS.find(p => p.value === yahooPrices.period)?.label ?? yahooPrices.period} · ${chartPrices.length} pts · ${priceProviderLabel(yahooPrices.provider)}`
+                : pricesError ? 'Showing embedded data' : 'Embedded sample'}
               {yahooPrices?.currency ? ` · ${yahooPrices.currency}` : ''}
             </div>
           </div>
-          {ticker !== 'RNA' && (
-            <div className="flex gap-0.5 p-0.5 bg-canvas border border-border rounded-lg shrink-0">
-              {PERIODS.map(p => (
-                <button key={p.value} onClick={() => setPeriod(p.value)}
-                  className={['px-2 py-1 rounded text-[10px] font-semibold transition-all',
-                    period === p.value ? 'bg-[#1f2937] text-[#e6edf3]' : 'text-muted hover:text-[#e6edf3]',
-                  ].join(' ')}>
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="flex gap-0.5 p-0.5 bg-canvas border border-border rounded-lg shrink-0">
+            {PERIODS.map(p => (
+              <button key={p.value} onClick={() => setPeriod(p.value)}
+                className={['px-2 py-1 rounded text-[10px] font-semibold transition-all',
+                  period === p.value ? 'bg-[#1f2937] text-[#e6edf3]' : 'text-muted hover:text-[#e6edf3]',
+                ].join(' ')}>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="px-1 pb-3">

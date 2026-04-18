@@ -23,7 +23,7 @@ load_dotenv()
 
 router = APIRouter()
 
-VALID_TICKERS = {"DYNE", "RNA", "SRPT", "WVE"}
+VALID_TICKERS = {"DYNE", "SRPT", "WVE"}
 
 _llm = ChatOpenAI(
     model="gpt-4o-mini",

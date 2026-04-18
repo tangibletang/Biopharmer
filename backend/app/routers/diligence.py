@@ -23,7 +23,7 @@ from app.models import (
 
 router = APIRouter()
 
-VALID_TICKERS = {"DYNE", "RNA", "SRPT", "WVE"}
+VALID_TICKERS = {"DYNE", "SRPT", "WVE"}
 
 
 def _coerce_response(raw: dict) -> WarRoomResponse:
