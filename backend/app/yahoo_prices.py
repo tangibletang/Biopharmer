@@ -12,8 +12,8 @@ from typing import Any
 YAHOO_SYMBOLS: dict[str, str] = {
     # Dyne Therapeutics trades as DYN on Nasdaq; DYNE returns no series on Yahoo.
     "DYNE": "DYN",
-    # Avidity Biosciences trades under AVDL (NASDAQ); "RNA" is the in-app shorthand.
-    "RNA": "AVDL",
+    # Avidity Biosciences trades as RNA on NASDAQ — no remapping needed.
+    "RNA": "RNA",
     "SRPT": "SRPT",
     "WVE": "WVE",
     # Neurology
