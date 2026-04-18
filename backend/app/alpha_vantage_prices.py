@@ -68,6 +68,7 @@ def filter_by_period(rows: list[dict[str, Any]], period: str) -> list[dict[str, 
         cutoff = date(today.year, 1, 1)
     else:
         days_map = {
+            "1mo": 31,
             "3mo": 92,
             "6mo": 183,
             "1y": 365,
@@ -93,6 +94,7 @@ def period_earliest_needed_iso(period: str) -> str | None:
     if period == "ytd":
         return date(today.year, 1, 1).isoformat()
     days_map = {
+        "1mo": 31,
         "3mo": 92,
         "6mo": 183,
         "1y": 365,

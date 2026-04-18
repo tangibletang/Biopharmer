@@ -361,8 +361,13 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                       const day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(datePart + 'T12:00:00').getDay()]
                       return `${day} ${timePart.slice(0, 5)}`
                     }
-                    const [yr, mo] = d.split('-')
+                    const [yr, mo, dd] = d.split('-')
                     const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1]
+                    // Short periods: show "Mar 18" so same-month ticks are distinguishable
+                    if (period === '1mo' || period === '3mo') return `${month} ${+dd}`
+                    // Multi-year: show year on every tick
+                    if (period === '5y' || period === 'max') return `${month} '${yr.slice(2)}`
+                    // Default: month name, with year annotation on January
                     return mo === '01' ? `${month} '${yr.slice(2)}` : month
                   }}
                   minTickGap={32}
