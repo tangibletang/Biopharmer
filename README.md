@@ -8,7 +8,7 @@ Biopharmer consolidates this workflow into a single research workspace. Users ge
 
 Currently built around a live Duchenne muscular dystrophy (DMD) coverage slice (DYNE, SRPT, WVE).
 
-> **Note** See [SUBMISSION.md](SUBMISSION.md) for how the Research Barn answers the Option A brief—agent roles, tools, human-in-the-loop controls, and code pointers.
+> **Note:** See [SUBMISSION.md](SUBMISSION.md) for how the Research Barn answers the Option A brief—agent roles, tools, human-in-the-loop controls, and code pointers.
 
 ---
 
