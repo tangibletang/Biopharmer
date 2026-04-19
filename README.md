@@ -1,6 +1,16 @@
 # Biopharmer
 
-**Biopharmer** is a research workspace for **biotech investing**: fund analysts, serious retail investors, and anyone who needs to connect **market behavior** to **mechanism-level science** without jumping between terminals, PDFs, and scattered databases. The product is built around a **live Duchenne muscular dystrophy (DMD) coverage slice** (four names, timelines, prices) and a **multi-agent diligence loop**—the **Research Barn**—that runs structured debate, critique, and synthesis on whatever you ask about a ticker.
+During my internship at Dyne Therapeutics, I realized that applying rigorous scientific research could help give na edge in biotech investing. With my Roth IRA contribution, I performed very well on an investment simply informed by a literature review I participated in. It reinforced a simple thesis: if the science is good, the company has a good chance of succeeding.
+
+In biotech, valuations swing violently based on clinical milestones and data readouts. Yet, most college students and casual traders sit on the sidelines. The reason is simple: the necessary information is scattered, siloed, or trapped behind paywalls. You shouldn't have to hunt down papers individual papers on PubMed, or subscribe to 10 free trials to get the information you need about upcoming events, stock prices, and potentail market warnings. 
+
+I built Biopharmer to consolidate this workflow and make the gap between the lab and the market completely transparent. It is a research workspace for anyone who needs to connect market behavior to mechanism-level science.
+
+Users are given the option of a quick AI summary about upcoming important events, or the use of the multi-agentic Research Barn. Aversarial AI agents independently research, debate, and critique each other's findings on any ticker, pulling directly from PubMed, OpenFDA, and pgvector-ranked scientific peers to strip away the uncertainty.
+
+Currently built around a live Duchenne muscular dystrophy (DMD) coverage slice, Biopharmer provides the ideal platform to visualize rival companies, track mechanism-level developments, and conduct institutional-grade research all in one place.
+
+---
 
 ---
 
