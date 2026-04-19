@@ -190,7 +190,7 @@ export default function MilestoneModal({ milestone, ticker, onClose, onInvestiga
               {onInvestigate && (
                 <div className="space-y-1.5">
                   <div className="text-[10px] text-muted uppercase tracking-wider px-1 pt-1">
-                    Deep research in the Research Pharm
+                    Deep research in the Research Barn
                   </div>
                   {researchAngles.map((angle) => (
                     <button

@@ -232,7 +232,7 @@ type DmdTab  = 'timeline' | 'research'
 
 const DMD_TABS: { id: DmdTab; label: string }[] = [
   { id: 'timeline', label: 'Timeline' },
-  { id: 'research', label: 'The Research Pharm' },
+  { id: 'research', label: 'The Research Barn' },
 ]
 
 // ── Main content (reads searchParams) ────────────────────────────────────────
@@ -413,7 +413,7 @@ function WarRoomContent() {
                   : 'text-muted hover:text-[#e6edf3]',
               ].join(' ')}
             >
-              {tab === 'timeline' ? 'Timeline' : 'The Research Pharm'}
+              {tab === 'timeline' ? 'Timeline' : 'The Research Barn'}
             </button>
           ))}
         </nav>

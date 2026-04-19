@@ -470,7 +470,7 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefill
 
   // When ticker actually changes, restore that ticker's saved state.
   // Do not use a "first mount" flag: Strict Mode runs effects twice on mount, which would
-  // clear focus on the second run and wipe prefillFocus from "Research Pharm" navigation.
+  // clear focus on the second run and wipe prefillFocus from "Research Barn" navigation.
   const prevTickerRef = useRef(ticker)
   useEffect(() => {
     if (prevTickerRef.current === ticker) return

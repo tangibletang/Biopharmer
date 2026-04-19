@@ -14,11 +14,11 @@ Aligned with the **Option A** brief in the root [`README.md`](../README.md) (*qu
 
 | Area | Today |
 |------|--------|
-| **Orchestration** | **Iterative Research Pharm** in [`backend/app/agents/iterative_war_room.py`](../backend/app/agents/iterative_war_room.py): `load_context` → **orchestrator** → **parallel explorers** → **parallel critics** → **steering options** → pause; repeat; then **synthesizer** when `max_iterations` reached. |
+| **Orchestration** | **Iterative Research Barn** in [`backend/app/agents/iterative_war_room.py`](../backend/app/agents/iterative_war_room.py): `load_context` → **orchestrator** → **parallel explorers** → **parallel critics** → **steering options** → pause; repeat; then **synthesizer** when `max_iterations` reached. |
 | **Input** | User **research question** + **ticker** (DMD universe) + **persona** + **max iterations** — not open-ended arXiv topics; intentional scope tradeoff for grounding. |
 | **Parallelism** | **Yes** — `asyncio.gather` for explorers and for critics each round. |
 | **Persistence** | **In-process** `_sessions` keyed by `thread_id` (lost on API restart). No DB-backed `research_sessions` writes yet. |
-| **UI** | **Research Pharm** tab: transcript, interim summary, steering pills, run/resume. Timeline + map elsewhere. |
+| **UI** | **Research Barn** tab: transcript, interim summary, steering pills, run/resume. Timeline + map elsewhere. |
 | **APIs** | `POST /api/diligence/start`, `POST /api/diligence/resume`, `GET /api/diligence/personas`. Explorers use **tools**: `pgvector_peers`, `openfda_adverse_events`. |
 
 **Legacy note:** Older docs referred to `GET /api/diligence/{ticker}` and `parallel_debate.py`; those paths are **not** the current implementation.
@@ -39,7 +39,7 @@ Aligned with the **Option A** brief in the root [`README.md`](../README.md) (*qu
 
 **Goal:** Prove parallel exploration + inspectable trace; **debate-shaped** output.
 
-**Status:** **Delivered** in the **iterative Research Pharm** (`iterative_war_room.py` + `POST /api/diligence/start` / `resume`). Each *round* runs parallel explorers and parallel critics; final **synthesis JSON** replaces the older single-shot “merger matrix” shape.
+**Status:** **Delivered** in the **iterative Research Barn** (`iterative_war_room.py` + `POST /api/diligence/start` / `resume`). Each *round* runs parallel explorers and parallel critics; final **synthesis JSON** replaces the older single-shot “merger matrix” shape.
 
 **Backend**
 
@@ -49,7 +49,7 @@ Aligned with the **Option A** brief in the root [`README.md`](../README.md) (*qu
 
 **Frontend**
 
-- [x] **Research Pharm** — transcript, steering UI, synthesis panel.
+- [x] **Research Barn** — transcript, steering UI, synthesis panel.
 
 **Legacy:** `research_sessions` / `research_threads` / `research_messages` in `schema.sql` are optional; nothing in the current app writes to them.
 
@@ -61,7 +61,7 @@ Aligned with the **Option A** brief in the root [`README.md`](../README.md) (*qu
 
 **Goal:** Iterative critique; optional escalation when disagreement or uncertainty is high.
 
-**Status:** **Partially met** — the Research Pharm already runs **multiple rounds** (`max_iterations`) with **orchestrator → explorers → critics** each time and **human steering** between rounds. Remaining Phase 2 ideas:
+**Status:** **Partially met** — the Research Barn already runs **multiple rounds** (`max_iterations`) with **orchestrator → explorers → critics** each time and **human steering** between rounds. Remaining Phase 2 ideas:
 
 - **Conditional edges** (e.g. second round only if a “judge” score is below threshold) — not implemented; every run does full rounds up to `max_iterations`.
 - **Persisted** `messages` with **round** index in Postgres — not implemented (in-memory only).
@@ -132,7 +132,7 @@ Aligned with the **Option A** brief in the root [`README.md`](../README.md) (*qu
 
 ## References (in-repo)
 
-- **Iterative Research Pharm (Option A loop):** `backend/app/agents/iterative_war_room.py`
+- **Iterative Research Barn (Option A loop):** `backend/app/agents/iterative_war_room.py`
 - **Peer search helper (embeddings):** `backend/app/agents/war_room.py`
 - **Peers API:** `backend/app/routers/peers.py`, `backend/seed.py`
 - **Product baseline:** `project_spec.md`

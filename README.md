@@ -1,6 +1,6 @@
 # Biopharmer
 
-**Biopharmer** is a research workspace for **biotech investing**: fund analysts, serious retail investors, and anyone who needs to connect **market behavior** to **mechanism-level science** without jumping between terminals, PDFs, and scattered databases. The product is built around a **live Duchenne muscular dystrophy (DMD) coverage slice** (four names, timelines, prices) and a **multi-agent diligence loop**—the **Research Pharm**—that runs structured debate, critique, and synthesis on whatever you ask about a ticker.
+**Biopharmer** is a research workspace for **biotech investing**: fund analysts, serious retail investors, and anyone who needs to connect **market behavior** to **mechanism-level science** without jumping between terminals, PDFs, and scattered databases. The product is built around a **live Duchenne muscular dystrophy (DMD) coverage slice** (four names, timelines, prices) and a **multi-agent diligence loop**—the **Research Barn**—that runs structured debate, critique, and synthesis on whatever you ask about a ticker.
 
 ---
 
@@ -8,7 +8,7 @@
 
 The product is designed against **Option A**: *multiple agents collaborating on a research problem—generating ideas, critiquing each other, and converging on something useful.* The user poses a **question**; agents **explore independently**, **challenge each other’s reasoning**, and the system **distills** the conversation into **structured, actionable** output. **Think debate, not consensus**—the value is **friction between perspectives**, not a single smoothed summary.
 
-**Scope tradeoff (same architecture, different domain):** Example prompts in the brief are *open-ended research* (“novel loss functions for small language models”, “approaches to causal inference in sparse time-series data”). Biopharmer **narrows the question space** to **investable biotech diligence** on a **ticker** in the DMD slice, so every run is grounded in **Postgres context, embeddings, and market-adjacent tools**—the same *orchestration pattern*, with **investment questions** instead of arbitrary ML theory. Example Research Pharm questions in that spirit:
+**Scope tradeoff (same architecture, different domain):** Example prompts in the brief are *open-ended research* (“novel loss functions for small language models”, “approaches to causal inference in sparse time-series data”). Biopharmer **narrows the question space** to **investable biotech diligence** on a **ticker** in the DMD slice, so every run is grounded in **Postgres context, embeddings, and market-adjacent tools**—the same *orchestration pattern*, with **investment questions** instead of arbitrary ML theory. Example Research Barn questions in that spirit:
 
 - *“What would change my mind on regulatory risk for SRPT’s label before the next data cut?”*
 - *“How does DYNE’s exon-51 story compare to RNA’s AOC path on durability evidence—not headlines?”*
@@ -23,9 +23,9 @@ The product is designed against **Option A**: *multiple agents collaborating on 
 
 ---
 
-## The Research Pharm: why the agent loop is the product
+## The Research Barn: why the agent loop is the product
 
-The Research Pharm is not a chat sidebar. It is an **iterative, human-steered diligence engine** that sits at the center of Biopharmer’s value: you bring a **research question** and an **investor persona**, and the system runs **repeatable rounds** of orchestrated debate until you hit your iteration limit—then it delivers a **structured synthesis** (summary, key findings, investor considerations, one forward **watch item**).
+The Research Barn is not a chat sidebar. It is an **iterative, human-steered diligence engine** that sits at the center of Biopharmer’s value: you bring a **research question** and an **investor persona**, and the system runs **repeatable rounds** of orchestrated debate until you hit your iteration limit—then it delivers a **structured synthesis** (summary, key findings, investor considerations, one forward **watch item**).
 
 **What one “round” does**
 
@@ -86,7 +86,7 @@ The iterative loop lives in [`backend/app/agents/iterative_war_room.py`](backend
 
 ## Product vision
 
-Biopharmer bridges **financial markets** and **clinical science** in one place: price and milestones on a **timeline**, peer similarity on a **map**, and **diligence** in the Research Pharm—so “what should I believe about this name?” is answerable from **structured data, embeddings, and recorded multi-agent reasoning**, not a single generic chat turn.
+Biopharmer bridges **financial markets** and **clinical science** in one place: price and milestones on a **timeline**, peer similarity on a **map**, and **diligence** in the Research Barn—so “what should I believe about this name?” is answerable from **structured data, embeddings, and recorded multi-agent reasoning**, not a single generic chat turn.
 
 ---
 

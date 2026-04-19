@@ -1,6 +1,6 @@
 # Biopharmer — Backend
 
-FastAPI service for **peer similarity**, **prices**, **universe/compare** helpers, **milestone AI analysis**, and the **Research Pharm** — an iterative multi-agent diligence loop (`POST /api/diligence/start` + `POST /api/diligence/resume`). For product context (agents, tools, human steering), see the root [README.md](../README.md).
+FastAPI service for **peer similarity**, **prices**, **universe/compare** helpers, **milestone AI analysis**, and the **Research Barn** — an iterative multi-agent diligence loop (`POST /api/diligence/start` + `POST /api/diligence/resume`). For product context (agents, tools, human steering), see the root [README.md](../README.md).
 
 ---
 
@@ -36,8 +36,8 @@ All API routes are under `/api` except **`GET /health`**.
 | GET | `/api/peers/{ticker}` | pgvector cosine-similarity peers + clinical metrics for DMD tickers |
 | GET | `/api/universe` | Universe listing for hub/compare flows |
 | POST | `/api/compare` | Side-by-side comparison payload (see OpenAPI schema) |
-| GET | `/api/diligence/personas` | JSON list of **user personas** for the Research Pharm UI |
-| POST | `/api/diligence/start` | **Start** a Research Pharm thread: ticker, research question, persona, max iterations |
+| GET | `/api/diligence/personas` | JSON list of **user personas** for the Research Barn UI |
+| POST | `/api/diligence/start` | **Start** a Research Barn thread: ticker, research question, persona, max iterations |
 | POST | `/api/diligence/resume` | **Continue** a paused thread with optional human steering (`human_directive`; empty = “continue as-is”) |
 | GET | `/api/prices/{ticker}` | Daily prices (`period` query; Alpha Vantage when configured, else Yahoo — see below) |
 | POST | `/api/milestone/analyze` | Short AI analysis for a single milestone (timeline modal) |
@@ -48,7 +48,7 @@ All API routes are under `/api` except **`GET /health`**.
 
 ---
 
-### Research Pharm API (request / response)
+### Research Barn API (request / response)
 
 **`POST /api/diligence/start`** — body (`application/json`):
 
@@ -164,7 +164,7 @@ clinical_metrics
   audit_text      text                -- clinical trial summary
 ```
 
-The `embedding` column is indexed with `ivfflat` (cosine ops) for peer-similarity queries used by `/api/peers` and by explorer tools in the Research Pharm.
+The `embedding` column is indexed with `ivfflat` (cosine ops) for peer-similarity queries used by `/api/peers` and by explorer tools in the Research Barn.
 
 ---
 
