@@ -2,7 +2,7 @@
 
 ## How this repo answers the brief
 
-The brief asks for *multiple agents collaborating on a research problem—generating ideas, critiquing each other, and converging on something useful.* The user poses a **question**; agents **explore independently**, **challenge each other's reasoning**, and the system **distills** the conversation into **structured, actionable** output.
+The brief asks for multiple agents collaborating on a research problem—generating ideas, critiquing each other, and converging on something useful. The user poses a questio*; agents explore independently, challenge each other's reasoning, and the system distills the conversation into structured, actionable output.
 
 
 | What Option A asks for | How Biopharmer delivers |
