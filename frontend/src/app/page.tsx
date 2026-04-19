@@ -4,10 +4,9 @@
 // Landing page: DMD is the live, featured universe. Other sectors are in-progress.
 
 const DMD_COMPANIES = [
-  { ticker: 'SRPT', name: 'Sarepta',  color: '#d2a8ff' },
-  { ticker: 'DYN',  name: 'Dyne',     color: '#58a6ff' },
-  { ticker: 'RNA',  name: 'Avidity',  color: '#3fb950' },
-  { ticker: 'WVE',  name: 'Wave',     color: '#ffa657' },
+  { ticker: 'SRPT', name: 'Sarepta', color: '#d2a8ff' },
+  { ticker: 'DYN',  name: 'Dyne',   color: '#58a6ff' },
+  { ticker: 'WVE',  name: 'Wave',   color: '#ffa657' },
 ]
 
 const COMING_SOON = [
@@ -54,12 +53,8 @@ export default function HubPage() {
         <p className="text-[10px] text-accent uppercase tracking-[0.25em] mb-3">For biotech investors</p>
         <h1 className="text-4xl font-bold tracking-tight text-[#e6edf3] leading-tight">
           See catalysts, comps, and prices<br />
-          <span className="text-muted font-normal">in one place.</span>
+          <span className="text-[#8b949e] font-normal">in one place.</span>
         </h1>
-        <p className="mt-4 text-sm text-muted max-w-md leading-relaxed">
-          Live DMD coverage today: clinical milestones, a competitive view across four names,
-          live prices, and AI research when you want to go deeper — built for investment decisions, not jargon.
-        </p>
       </div>
 
       {/* Cards grid */}
@@ -88,8 +83,8 @@ export default function HubPage() {
                 DMD
               </h2>
               <p className="text-[11px] text-muted/90 mt-0.5">Duchenne muscular dystrophy</p>
-              <p className="text-sm text-muted mt-2 max-w-sm leading-relaxed">
-                Four public names, 50+ catalysts, live prices — plus timelines and AI diligence so you can follow what matters for the trade.
+              <p className="text-sm text-[#8b949e] mt-2 max-w-sm leading-relaxed">
+                Three public names, 50+ catalysts, live prices, timelines, and AI diligence so you can follow what matters for the trade.
               </p>
             </div>
 
@@ -122,7 +117,7 @@ export default function HubPage() {
           {/* CTA footer */}
           <div className="px-7 py-4 border-t border-border/60 flex items-center justify-between">
             <span className="text-xs text-muted">
-              4 companies · 50+ milestones · real-time data
+              3 companies · 50+ milestones · real-time data
             </span>
             <span className="text-xs font-semibold text-positive group-hover:translate-x-0.5 transition-transform duration-150">
               Open workspace →
