@@ -55,6 +55,7 @@ Explorers share a tool-bound model (`gpt-4o` with tools):
 |------|---------|
 | **`pgvector_peers`** | Returns the closest scientific peers for the DMD ticker from cosine similarity over mechanism embeddings—similarity score plus key clinical_metrics fields (Emax, half-life, Grade 3+ AE rate). |
 | **`openfda_adverse_events`** | Queries openFDA drug/event data for a compound name—seriousness and reaction lines—when safety grounding matters. |
+| **`clinicaltrials_lookup`** | Searches ClinicalTrials.gov for trials matching a drug name, compound, or company. Returns trial phase, status, enrollment, primary completion date, primary endpoint, and sponsor—grounding claims about readout timelines and trial design in primary source data. |
 
 Tools are invoked only when they add evidence; the prompt discourages tool spam. Domain grounding also comes from a pre-loaded context block (mechanism + clinical table + peer list) on every round.
 

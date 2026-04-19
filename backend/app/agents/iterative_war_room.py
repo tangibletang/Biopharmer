@@ -118,7 +118,53 @@ def openfda_adverse_events(drug_name: str, limit: int = 5) -> str:
         return f"openFDA query failed: {exc}"
 
 
-_llm_with_tools = _llm.bind_tools([pgvector_peers, openfda_adverse_events])
+@tool
+def clinicaltrials_lookup(query: str, max_results: int = 5) -> str:
+    """Search ClinicalTrials.gov for trials matching a drug name, compound, company, or condition.
+    Returns trial phase, status, enrollment, primary completion date, primary endpoint, and sponsor.
+    Use this to ground claims about trial status, enrollment size, endpoints, or expected readout dates."""
+    try:
+        resp = httpx.get(
+            "https://clinicaltrials.gov/api/v2/studies",
+            params={"query.term": query, "pageSize": min(max_results, 10), "format": "json"},
+            timeout=15.0,
+        )
+        if resp.status_code != 200:
+            return f"ClinicalTrials.gov returned HTTP {resp.status_code}."
+        studies = resp.json().get("studies", [])
+        if not studies:
+            return f"No trials found for '{query}'."
+
+        lines = []
+        for s in studies[:max_results]:
+            ps  = s.get("protocolSection", {})
+            idm = ps.get("identificationModule", {})
+            stm = ps.get("statusModule", {})
+            dem = ps.get("designModule", {})
+            spn = ps.get("sponsorCollaboratorsModule", {}).get("leadSponsor", {})
+            out = ps.get("outcomesModule", {})
+
+            nct    = idm.get("nctId", "N/A")
+            title  = idm.get("briefTitle", "N/A")[:90]
+            status = stm.get("overallStatus", "N/A")
+            phases = dem.get("phases") or []
+            phase  = "/".join(p.replace("PHASE", "Ph") for p in phases) if phases else "N/A"
+            n      = dem.get("enrollmentInfo", {}).get("count", "N/A")
+            end_dt = stm.get("primaryCompletionDateStruct", {}).get("date", "N/A")
+            sponsor = spn.get("name", "N/A")
+            primary_ep = (out.get("primaryOutcomes") or [{}])[0].get("measure", "N/A")[:70]
+
+            lines.append(
+                f"{nct} | {phase} | {status} | n={n} | ends={end_dt} | sponsor={sponsor}\n"
+                f"  Title: {title}\n"
+                f"  Primary endpoint: {primary_ep}"
+            )
+        return "\n\n".join(lines)
+    except Exception as exc:
+        return f"ClinicalTrials.gov query failed: {exc}"
+
+
+_llm_with_tools = _llm.bind_tools([pgvector_peers, openfda_adverse_events, clinicaltrials_lookup])
 
 
 # ── Explorer personas ──────────────────────────────────────────────────────────
@@ -277,9 +323,13 @@ async def explorer_node(state: WarRoomState) -> dict:
             [
                 SystemMessage(content=(
                     f"Today is {today}. You are {persona_desc}. "
-                    "You have access to two tools: pgvector_peers (DMD similarity search) "
-                    "and openfda_adverse_events (FDA safety data). Use them only when they add "
-                    "concrete evidence. Defend one specific investment angle in 3–5 numbered points. "
+                    "You have access to three tools: "
+                    "pgvector_peers (DMD mechanism similarity + clinical metrics), "
+                    "openfda_adverse_events (FDA safety signal data), and "
+                    "clinicaltrials_lookup (trial status, phase, enrollment, primary endpoint, "
+                    "expected readout date from ClinicalTrials.gov). "
+                    "Use tools only when they add concrete evidence — do not spam them. "
+                    "Defend one specific investment angle in 3–5 numbered points. "
                     "Be specific, data-grounded, and provocative. Sign your response [{label}]."
                 )),
                 HumanMessage(content=(
