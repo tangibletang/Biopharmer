@@ -276,23 +276,23 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const xTicks = useMemo(() => {
     if (isIntraday || !chartPrices.length) return undefined
     const dates = chartPrices.map(p => p.date)
-    const seen  = new Set<string>()
+    const seen: Record<string, true> = {}
     if (period === ‘5y’) {
       // One tick per 6-month window (Jan, Jul of each year)
       return dates.filter(d => {
-        const [yr, mo] = d.split(‘-’)
-        const half = +mo <= 6 ? ‘H1’ : ‘H2’
-        const key  = `${yr}-${half}`
-        if (seen.has(key)) return false
-        seen.add(key)
+        const parts = d.split(‘-’)
+        const half  = +parts[1] <= 6 ? ‘H1’ : ‘H2’
+        const key   = parts[0] + ‘-’ + half
+        if (seen[key]) return false
+        seen[key] = true
         return true
       })
     }
     // 6mo / ytd / 1y / 1mo: one tick per calendar month
     return dates.filter(d => {
       const key = d.slice(0, 7) // YYYY-MM
-      if (seen.has(key)) return false
-      seen.add(key)
+      if (seen[key]) return false
+      seen[key] = true
       return true
     })
   }, [chartPrices, period, isIntraday])
