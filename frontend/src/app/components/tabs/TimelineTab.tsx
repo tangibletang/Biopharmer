@@ -174,6 +174,21 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const [todayStr, setTodayStr] = useState<string | null>(null)
   const chartColors = useChartColors()
 
+  // ── Client-side price cache ───────────────────────────────────────────────
+  const priceCache       = useRef<Map<string, PricesResponse>>(new Map())
+  const lastFetchRef     = useRef<number>(0)
+  const slowDownTimer    = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [showSlowDown, setShowSlowDown] = useState(false)
+
+  const triggerSlowDown = () => {
+    setShowSlowDown(true)
+    if (slowDownTimer.current) clearTimeout(slowDownTimer.current)
+    slowDownTimer.current = setTimeout(() => setShowSlowDown(false), 2800)
+  }
+
+  // Cleanup timer on unmount
+  useEffect(() => () => { if (slowDownTimer.current) clearTimeout(slowDownTimer.current) }, [])
+
   const setHover = (label: string | null, src: HoverSrc) => {
     hoverSrcRef.current = src
     setHovered(label)
@@ -181,15 +196,52 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
 
   useEffect(() => { setTodayStr(localDateISO(new Date())) }, [])
 
-  // Clear stale data only when the ticker changes, not on period changes.
+  // Clear stale data when ticker changes; warm from cache if available.
   useEffect(() => {
-    setYahooPrices(null)
+    const cached = priceCache.current.get(`${ticker}:${period}`)
+    setYahooPrices(cached ?? null)
     setPricesError(null)
-    setDailyStrip(null)
-    setDailyStripSyncing(false)
-  }, [ticker])
+    if (!cached) {
+      setDailyStrip(null)
+      setDailyStripSyncing(false)
+    }
+  }, [ticker]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Prefetch 1y + 1d for new ticker in the background (Option C).
   useEffect(() => {
+    const prefetch: PeriodValue[] = ['1y', '1d']
+    for (const p of prefetch) {
+      if (p === period) continue // already being fetched below
+      const key = `${ticker}:${p}`
+      if (priceCache.current.has(key)) continue
+      fetch(`${API}/api/prices/${ticker}?period=${p}`)
+        .then(r => r.ok ? r.json() as Promise<PricesResponse> : null)
+        .then(d => { if (d?.prices?.length) priceCache.current.set(key, d) })
+        .catch(() => {})
+    }
+  }, [ticker]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Main fetch — checks cache first (Option A).
+  useEffect(() => {
+    const cacheKey = `${ticker}:${period}`
+    const cached   = priceCache.current.get(cacheKey)
+
+    if (cached) {
+      // Instant cache hit — no loading state needed
+      setYahooPrices(cached)
+      setPricesLoading(false)
+      setPricesError(null)
+      if (period !== '1d') { setDailyStrip(null); setDailyStripSyncing(false) }
+      return
+    }
+
+    // Cache miss — check if user is toggling too fast
+    const now = Date.now()
+    if (lastFetchRef.current !== 0 && now - lastFetchRef.current < 700) {
+      triggerSlowDown()
+    }
+    lastFetchRef.current = now
+
     let cancelled = false
     setPricesLoading(true)
     setPricesError(null)
@@ -199,7 +251,12 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
     }
     fetch(`${API}/api/prices/${ticker}?period=${period}`)
       .then(async r => { if (!r.ok) throw new Error(await r.text()); return r.json() as Promise<PricesResponse> })
-      .then(d  => { if (!cancelled && d.prices?.length) setYahooPrices(d) })
+      .then(d => {
+        if (!cancelled && d.prices?.length) {
+          priceCache.current.set(cacheKey, d)
+          setYahooPrices(d)
+        }
+      })
       .catch(e => { if (!cancelled) setPricesError(String(e)) })
       .finally(() => { if (!cancelled) setPricesLoading(false) })
     return () => { cancelled = true }
@@ -629,6 +686,14 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
       </div>
 
       {selected && <MilestoneModal milestone={selected} ticker={ticker} onClose={() => setSelected(null)} onInvestigate={onInvestigate} />}
+
+      {/* ── Slow-down toast ── */}
+      {showSlowDown && (
+        <div className="fixed bottom-16 right-5 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-lg border border-[#ffa657]/40 bg-surface shadow-lg text-[11px] text-[#ffa657] pointer-events-none select-none">
+          <span>⚠</span>
+          <span>Prices load from Yahoo — give it a moment</span>
+        </div>
+      )}
     </div>
   )
 }
