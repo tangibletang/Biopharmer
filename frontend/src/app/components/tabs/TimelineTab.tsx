@@ -272,32 +272,21 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const periodChangePct =
     periodChange != null && periodBaseline ? (periodChange / periodBaseline) * 100 : null
 
-  // Explicit tick list so each label appears exactly once (no duplicate "Apr Apr Apr").
+  // Explicit tick list — one entry per calendar month so the same label
+  // never appears twice regardless of how many data points fall in it.
   const xTicks = useMemo(() => {
     if (isIntraday || !chartPrices.length) return undefined
     const dates = chartPrices.map(p => p.date)
     const seen: Record<string, true> = {}
-    if (period === ‘5y’) {
-      // One tick per 6-month window (Jan, Jul of each year)
-      return dates.filter(d => {
-        const parts = d.split(‘-’)
-        const half  = +parts[1] <= 6 ? ‘H1’ : ‘H2’
-        const key   = parts[0] + ‘-’ + half
-        if (seen[key]) return false
-        seen[key] = true
-        return true
-      })
-    }
-    // 6mo / ytd / 1y / 1mo: one tick per calendar month
     return dates.filter(d => {
       const key = d.slice(0, 7) // YYYY-MM
       if (seen[key]) return false
       seen[key] = true
       return true
     })
-  }, [chartPrices, period, isIntraday])
+  }, [chartPrices, isIntraday])
 
-  // Don’t show header $/% from a **stale** Yahoo series (wrong window) while a new period is loading.
+  // Do not show header $/% from a **stale** Yahoo series (wrong window) while a new period is loading.
   const hasLivePrices = !!(yahooPrices?.prices?.length)
   const liveSeriesAligned =
     !hasLivePrices ||
@@ -466,7 +455,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                 <g key={y}>
                   <line x1={dx(`${y}-01-01`)} y1={SY-10} x2={dx(`${y}-01-01`)} y2={SY+10} stroke="#484f58" strokeWidth={1} />
                   <text x={dx(`${y}-07-01`)} y={SY+28} textAnchor="middle" fill="#484f58"
-                    fontSize={11} fontFamily="ui-monospace,monospace" fontWeight="600">{y}</text>
+                    fontSize={11} fontFamily="var(--font-plex-mono),ui-monospace,monospace" fontWeight="600">{y}</text>
                 </g>
               ))}
               <line x1={dx('2028-01-01')} y1={SY-6} x2={dx('2028-01-01')} y2={SY+6} stroke="#484f58" strokeWidth={1} />
@@ -477,7 +466,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     stroke="#58a6ff" strokeWidth={1.5} strokeDasharray="5 3" strokeOpacity={0.55} />
                   <rect x={todayX-20} y={SY-97} width={40} height={18} rx={4} fill="#58a6ff" fillOpacity={0.12} />
                   <text x={todayX} y={SY-84} textAnchor="middle" fill="#58a6ff"
-                    fontSize={9} fontFamily="ui-monospace,monospace" fontWeight="700" letterSpacing="1">TODAY</text>
+                    fontSize={9} fontFamily="var(--font-plex-mono),ui-monospace,monospace" fontWeight="700" letterSpacing="1">TODAY</text>
                 </g>
               )}
 
