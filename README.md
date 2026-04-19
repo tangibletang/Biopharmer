@@ -1,6 +1,6 @@
 # Biopharmer
 
-During my internship at Dyne Therapeutics, I realized that applying rigorous scientific research could help give na edge in biotech investing. With my Roth IRA contribution, I performed very well on an investment simply informed by a literature review I participated in. It reinforced a simple thesis: if the science is good, the company has a good chance of succeeding.
+During my internship at Dyne Therapeutics, I realized that applying rigorous scientific research could help give an edge in biotech investing. With my Roth IRA contribution, I performed very well on an investment simply informed by a literature review I participated in. It reinforced a simple thesis: if the science is good, the company has a good chance of succeeding.
 
 In biotech, valuations swing violently based on clinical milestones and data readouts. Yet, most college students and casual traders sit on the sidelines. The reason is simple: the necessary information is scattered, siloed, or trapped behind paywalls. You shouldn't have to hunt down papers individual papers on PubMed, or subscribe to 10 free trials to get the information you need about upcoming events, stock prices, and potentail market warnings. 
 
