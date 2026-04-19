@@ -4,9 +4,9 @@
 
 During my internship at Dyne Therapeutics, I realized that applying rigorous scientific research could give an edge in biotech investing. With my Roth IRA contribution, I performed very well on an investment simply informed by a literature review I participated in. It reinforced a simple thesis: if the science is good, the company has a good chance of succeeding.
 
-In biotech, valuations swing violently based on clinical milestones and data readouts—yet most investors sit on the sidelines because the necessary information is scattered, siloed, or trapped behind paywalls. You shouldn't have to hunt down papers on PubMed or subscribe to 10 free trials to track upcoming events, stock prices, and potential market warnings.
+In biotech, stock prices swing violently based on clinical milestones and data readouts. Yet, most investors sit on the sidelines because the necessary information is scattered, siloed, or trapped behind paywalls. You shouldn't have to hunt down papers on PubMed or subscribe to 10 free trials to track upcoming events, stock prices, and potential market warnings.
 
-Biopharmer consolidates this workflow into a single research workspace. Users get a live price timeline with clinical milestones, a mechanism similarity map, and the **Research Barn**—a multi-agent diligence engine where adversarial AI agents independently research, debate, and critique each other's findings on any ticker, pulling from PubMed, openFDA, and pgvector-ranked scientific peers.
+Biopharmer consolidates this workflow into a single research workspace. Users get a live price timeline with clinical milestones and a mechanism similarity map. At its core is the Research Barn: a multi-agent diligence engine where adversarial AI agents independently research, debate, and critique each other's findings on any ticker. With tools allowing agents to pull from PubMed, openFDA, and pgvector-ranked scientific peers, it acts as a strategy board to synthesize complex data and strip away the uncertainty.
 
 Currently built around a live Duchenne muscular dystrophy (DMD) coverage slice (DYNE, SRPT, WVE).
 
