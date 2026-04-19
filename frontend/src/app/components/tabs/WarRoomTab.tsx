@@ -95,25 +95,70 @@ const STATUS_MESSAGES = [
 
 // ── Role config ───────────────────────────────────────────────────────────────
 
-const ROLE_CONFIG: Record<string, { border: string; bg: string; label: string; labelColor: string }> = {
+type TranscriptRole = TranscriptMessage['role']
+
+const ROLE_CONFIG: Record<
+  TranscriptRole,
+  {
+    border: string
+    bg: string
+    label: string
+    labelColor: string
+    stripe: string
+    pillRing: string
+    pillBg: string
+    pillText: string
+    tagline: string
+  }
+> = {
   orchestrator: {
-    border: 'border-accent/30',
-    bg: 'bg-accent/5',
+    border: 'border-accent/35',
+    bg: 'bg-accent/10',
     label: 'Orchestrator',
     labelColor: 'text-accent',
+    stripe: 'bg-accent',
+    pillRing: 'ring-accent/40',
+    pillBg: 'bg-accent/15',
+    pillText: 'text-accent',
+    tagline: 'Frames the round and surfaces evidence gaps for explorers and critics.',
   },
   explorer: {
-    border: 'border-positive/25',
-    bg: 'bg-positive/5',
+    border: 'border-positive/35',
+    bg: 'bg-positive/10',
     label: 'Explorer',
     labelColor: 'text-positive',
+    stripe: 'bg-positive',
+    pillRing: 'ring-positive/35',
+    pillBg: 'bg-positive/15',
+    pillText: 'text-positive',
+    tagline: 'Builds thesis from mechanism, peer, and regulatory context.',
   },
   critic: {
-    border: 'border-negative/25',
-    bg: 'bg-negative/5',
+    border: 'border-negative/35',
+    bg: 'bg-negative/10',
     label: 'Critic',
     labelColor: 'text-negative',
+    stripe: 'bg-negative',
+    pillRing: 'ring-negative/35',
+    pillBg: 'bg-negative/15',
+    pillText: 'text-negative',
+    tagline: 'Stress-tests claims and flags weaknesses rivals would raise.',
   },
+}
+
+function roleLetter(role: TranscriptRole): string {
+  if (role === 'orchestrator') return 'O'
+  if (role === 'explorer') return 'E'
+  return 'C'
+}
+
+function agentInitials(agent: string, max = 3): string {
+  return agent
+    .split(/\s+/)
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, max)
 }
 
 // ── Phase derivation from saved result ────────────────────────────────────────
@@ -138,7 +183,7 @@ function StatusPulse({ tick }: { tick: number }) {
           ))}
           <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Agents active</span>
         </div>
-        <p key={tick} className="text-sm text-[#e6edf3] font-mono min-h-[2.5rem] leading-relaxed">
+        <p key={tick} className="text-sm text-[#e6edf3] min-h-[2.5rem] leading-relaxed">
           {STATUS_MESSAGES[tick % STATUS_MESSAGES.length]}
         </p>
         <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-border">
@@ -150,27 +195,117 @@ function StatusPulse({ tick }: { tick: number }) {
   )
 }
 
-function AgentCard({ message }: { message: TranscriptMessage }) {
-  const cfg = ROLE_CONFIG[message.role] ?? {
-    border: 'border-border', bg: 'bg-surface', label: message.role, labelColor: 'text-muted',
-  }
+function AgentCard({ message, id }: { message: TranscriptMessage; id?: string }) {
+  const cfg = ROLE_CONFIG[message.role]
   return (
-    <div className={`rounded-lg border ${cfg.border} ${cfg.bg} px-4 py-3`}>
-      <div className="flex items-center gap-2 mb-2">
-        <span className={`text-[10px] font-semibold uppercase tracking-wider ${cfg.labelColor}`}>
-          {cfg.label}
-        </span>
-        <span className="text-[10px] text-muted">— {message.agent}</span>
+    <div
+      id={id}
+      className={[
+        'rounded-lg border flex overflow-hidden scroll-mt-6',
+        cfg.border,
+        cfg.bg,
+      ].join(' ')}
+    >
+      <div className={['w-1.5 shrink-0', cfg.stripe].join(' ')} aria-hidden />
+      <div className="px-4 py-3 min-w-0 flex-1">
+        <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 mb-1">
+          <span className={`text-[10px] font-semibold uppercase tracking-wider ${cfg.labelColor}`}>
+            {cfg.label}
+          </span>
+          <span className="text-[10px] text-muted">·</span>
+          <span className="text-[10px] font-medium text-[#c9d1d9]">{message.agent}</span>
+        </div>
+        <p className="text-[9px] text-muted leading-snug mb-2">{cfg.tagline}</p>
+        <p className="text-xs text-[#c9d1d9] leading-relaxed whitespace-pre-wrap">{message.content}</p>
       </div>
-      <p className="text-xs text-[#c9d1d9] leading-relaxed whitespace-pre-wrap">{message.content}</p>
     </div>
   )
 }
 
-function RoundGroup({ iter, msgs }: { iter: number; msgs: TranscriptMessage[] }) {
-  const [open, setOpen] = useState(false)
+function DebateRoundStrip({
+  iter,
+  orchestratorMsgs,
+  agentMsgs,
+}: {
+  iter: number
+  orchestratorMsgs: TranscriptMessage[]
+  agentMsgs: TranscriptMessage[]
+}) {
+  const scrollTo = (elId: string) => {
+    document.getElementById(elId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+
+  type Seg = { elId: string; message: TranscriptMessage }
+  const segments: Seg[] = [
+    ...orchestratorMsgs.map((m, i) => ({ elId: `msg-${iter}-o-${i}`, message: m })),
+    ...agentMsgs.map((m, i) => ({ elId: `msg-${iter}-a-${i}`, message: m })),
+  ]
+
+  if (segments.length === 0) return null
+
+  return (
+    <div className="mb-3 rounded-lg border border-border/90 bg-canvas/50 px-3 py-2.5">
+      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted mb-2">
+        Debate flow · click a step to jump
+      </div>
+      <div className="flex flex-wrap items-center gap-y-2">
+        {segments.map((seg, idx) => {
+          const cfg = ROLE_CONFIG[seg.message.role]
+          const letter = roleLetter(seg.message.role)
+          const initials = agentInitials(seg.message.agent)
+          let short: string
+          if (seg.message.role === 'orchestrator') {
+            short = orchestratorMsgs.length > 1 ? `${letter}${orchestratorMsgs.indexOf(seg.message) + 1}` : letter
+          } else {
+            const sameRole = agentMsgs.filter(m => m.role === seg.message.role)
+            const pos = sameRole.indexOf(seg.message)
+            short = sameRole.length > 1 ? `${letter}·${initials}${pos + 1}` : `${letter}·${initials}`
+          }
+          const title = `${cfg.label} — ${seg.message.agent}`
+          return (
+            <span key={seg.elId} className="inline-flex items-center">
+              {idx > 0 && (
+                <span className="mx-1.5 h-px w-4 bg-border shrink-0" aria-hidden />
+              )}
+              <button
+                type="button"
+                title={title}
+                aria-label={title}
+                onClick={() => scrollTo(seg.elId)}
+                className={[
+                  'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wide',
+                  'ring-1 transition-colors hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50',
+                  cfg.pillRing,
+                  cfg.pillBg,
+                  cfg.pillText,
+                ].join(' ')}
+              >
+                <span>{short}</span>
+              </button>
+            </span>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function RoundGroup({
+  iter,
+  msgs,
+  defaultExpandAgents,
+}: {
+  iter: number
+  msgs: TranscriptMessage[]
+  defaultExpandAgents: boolean
+}) {
   const orchestratorMsgs = msgs.filter(m => m.role === 'orchestrator')
   const agentMsgs = msgs.filter(m => m.role !== 'orchestrator')
+  const [open, setOpen] = useState(defaultExpandAgents)
+
+  useEffect(() => {
+    if (defaultExpandAgents) setOpen(true)
+  }, [defaultExpandAgents])
 
   return (
     <div>
@@ -180,11 +315,15 @@ function RoundGroup({ iter, msgs }: { iter: number; msgs: TranscriptMessage[] })
         </span>
         <div className="flex-1 border-t border-border" />
       </div>
+      <DebateRoundStrip iter={iter} orchestratorMsgs={orchestratorMsgs} agentMsgs={agentMsgs} />
       <div className="space-y-2">
-        {orchestratorMsgs.map((m, i) => <AgentCard key={i} message={m} />)}
+        {orchestratorMsgs.map((m, i) => (
+          <AgentCard key={`o-${i}`} id={`msg-${iter}-o-${i}`} message={m} />
+        ))}
         {agentMsgs.length > 0 && (
           <>
             <button
+              type="button"
               onClick={() => setOpen(o => !o)}
               className="text-[10px] text-accent hover:text-[#79b8ff] transition-colors py-1 flex items-center gap-1.5"
             >
@@ -193,7 +332,9 @@ function RoundGroup({ iter, msgs }: { iter: number; msgs: TranscriptMessage[] })
             </button>
             {open && (
               <div className="space-y-2">
-                {agentMsgs.map((m, i) => <AgentCard key={i} message={m} />)}
+                {agentMsgs.map((m, i) => (
+                  <AgentCard key={`a-${i}`} id={`msg-${iter}-a-${i}`} message={m} />
+                ))}
               </div>
             )}
           </>
@@ -203,7 +344,13 @@ function RoundGroup({ iter, msgs }: { iter: number; msgs: TranscriptMessage[] })
   )
 }
 
-function TranscriptBody({ messages }: { messages: TranscriptMessage[] }) {
+function TranscriptBody({
+  messages,
+  defaultExpandAgents,
+}: {
+  messages: TranscriptMessage[]
+  defaultExpandAgents: boolean
+}) {
   if (!messages.length) return null
 
   const byIteration = messages.reduce<Record<number, TranscriptMessage[]>>((acc, m) => {
@@ -216,7 +363,12 @@ function TranscriptBody({ messages }: { messages: TranscriptMessage[] }) {
   return (
     <div className="space-y-6">
       {Object.entries(byIteration).map(([iter, msgs]) => (
-        <RoundGroup key={iter} iter={Number(iter)} msgs={msgs} />
+        <RoundGroup
+          key={iter}
+          iter={Number(iter)}
+          msgs={msgs}
+          defaultExpandAgents={defaultExpandAgents}
+        />
       ))}
     </div>
   )
@@ -641,15 +793,16 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefill
       {/* ── Transcript — the debate, rounds collapsed to orchestrator by default ── */}
       {result && result.transcript.length > 0 && phase !== 'loading' && (
         <div>
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
             <h2 className="text-xs font-semibold text-[#e6edf3] uppercase tracking-wider">
-              Debate transcript
+              Multi-agent debate
             </h2>
             <span className="text-[10px] text-muted">
-              {result.transcript.length} messages · ${displayTicker(ticker)}
+              {result.transcript.length} messages ·{' '}
+              <span className="font-mono text-[#c9d1d9]">${displayTicker(ticker)}</span>
             </span>
           </div>
-          <TranscriptBody messages={result.transcript} />
+          <TranscriptBody messages={result.transcript} defaultExpandAgents={phase === 'complete'} />
         </div>
       )}
     </div>

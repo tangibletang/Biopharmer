@@ -33,7 +33,8 @@ const config: Config = {
         muted:    '#8b949e',
       },
       fontFamily: {
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+        sans: ['var(--font-plex-sans)', 'system-ui', 'Segoe UI', 'sans-serif'],
+        mono: ['var(--font-plex-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
     },
   },

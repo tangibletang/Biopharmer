@@ -7,7 +7,7 @@ export interface TickerStripPriceSummary {
 }
 
 /**
- * Price + % for the war-room / sidebar strip: **last two daily closes** from `6mo`
+ * Price + % for the Research Barn / sidebar strip: **last two daily closes** from `6mo`
  * (prior session vs last completed session). Matches typical “day over day” on the strip.
  * Intraday `1d` is not used here — the Timeline 1D chart header uses a separate anchor fix.
  */

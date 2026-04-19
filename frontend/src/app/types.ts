@@ -27,7 +27,7 @@ export interface PeersResponse {
   peers: PeerResult[]
 }
 
-// ── Iterative War Room ────────────────────────────────────────────────────────
+// ── Iterative diligence (Research Barn tab) ───────────────────────────────────
 
 export interface WarRoomStartRequest {
   ticker: string

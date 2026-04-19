@@ -67,7 +67,7 @@ export default function HubPage() {
 
         {/* ── DMD card (spans full width top row) ─────────────────────────── */}
         <a
-          href="/war-room?sector=dmd"
+          href="/research-barn?sector=dmd"
           className="col-span-3 group relative rounded-xl border border-[#3fb950]/40 bg-surface
                      hover:border-[#3fb950]/70 hover:bg-[#161b22] transition-all duration-200
                      shadow-[0_0_30px_rgba(63,185,80,0.08)] hover:shadow-[0_0_40px_rgba(63,185,80,0.14)]
