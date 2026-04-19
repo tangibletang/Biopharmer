@@ -2,16 +2,16 @@
 
 ## How this repo answers the brief
 
-The brief asks for *multiple agents collaborating on a research problem—generating ideas, critiquing each other, and converging on something useful.* The user poses a **question**; agents **explore independently**, **challenge each other's reasoning**, and the system **distills** the conversation into **structured, actionable** output. **Think debate, not consensus**—the value is **friction between perspectives**, not a smoothed summary.
+The brief asks for *multiple agents collaborating on a research problem—generating ideas, critiquing each other, and converging on something useful.* The user poses a **question**; agents **explore independently**, **challenge each other's reasoning**, and the system **distills** the conversation into **structured, actionable** output.
 
 **Scope tradeoff:** Example prompts in the brief are open-ended ("novel loss functions for small language models", "causal inference in sparse time-series data"). Biopharmer **narrows the question space** to **investable biotech diligence** on a ticker in the DMD universe, so every run is grounded in Postgres context, embeddings, and market-adjacent tools—the same orchestration pattern, with investment questions instead of arbitrary ML theory.
 
 | What Option A asks for | How Biopharmer delivers |
 |------------------------|------------------------|
-| **Real multi-agent orchestration** — not sequential prompting dressed up as agents | Each round: **orchestrator** → **three parallel explorers** (`asyncio.gather`) → **two parallel critics** → steering generator → optional **synthesizer**. Not one chain-of-thought pretending to be a committee. |
-| **Visible, legible agent activity** | **Transcript** with `role`, named `agent`, and `iteration`; UI shows per-round debate before the next steer. |
-| **Output that is specific and useful** — not generic summaries | **Schema-constrained synthesis** (summary, findings, investor considerations, watch item); prompts force ticker + research question alignment; pgvector + clinical_metrics + tools reduce generic fluff. |
-| **Human intervention** — steer, pin, kill threads | **Shipped:** steer via suggested pills, custom directive, continue-as-is, persona, max iterations, same `thread_id` across resumes. **Not yet:** pin / kill individual branches—see [`docs/OPTION_A_ROADMAP.md`](docs/OPTION_A_ROADMAP.md). |
+| Real multi-agent orchestration | Each round: orchestrator → three parallel explorers (`asyncio.gather`) → two parallel critics → steering generator → optional synthesizer. |
+| Visible, legible agent activity | Transcript with `role`, named `agent`, and `iteration`; UI shows per-round debate before the next steer. |
+| Output that is specific and useful | Schema-constrained synthesis (summary, findings, investor considerations, watch item); prompts force ticker + research question alignment; pgvector + clinical_metrics + tools reduce generic fluff. |
+| Human intervention — steer, pin, kill threads | Shipped: steer via suggested pills, custom directive, continue-as-is, persona, max iterations, same `thread_id` across resumes. Planned: pin / kill individual branches—see [`docs/OPTION_A_ROADMAP.md`](docs/OPTION_A_ROADMAP.md). |
 
 ---
 
