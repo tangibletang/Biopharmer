@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google'
 import './globals.css'
+import { ThemeToggle } from './components/ThemeToggle'
 
 const plexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -24,9 +25,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${plexSans.variable} ${plexMono.variable}`}>
-      <body className="bg-canvas text-[#e6edf3] font-sans antialiased">
+    <html
+      lang="en"
+      className={`dark ${plexSans.variable} ${plexMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Inline script: apply saved theme before first paint to avoid flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body className="bg-canvas text-primary font-sans antialiased">
         {children}
+        <ThemeToggle />
       </body>
     </html>
   )

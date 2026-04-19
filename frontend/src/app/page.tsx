@@ -51,9 +51,9 @@ export default function HubPage() {
       {/* Hero */}
       <div className="px-8 pt-14 pb-10 max-w-5xl mx-auto w-full">
         <p className="text-[10px] text-accent uppercase tracking-[0.25em] mb-3">For biotech investors</p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#e6edf3] leading-tight">
+        <h1 className="text-4xl font-bold tracking-tight text-primary leading-tight">
           See catalysts, comps, and prices<br />
-          <span className="text-[#8b949e] font-normal">in one place.</span>
+          <span className="text-muted font-normal">in one place.</span>
         </h1>
       </div>
 
@@ -64,7 +64,7 @@ export default function HubPage() {
         <a
           href="/research-barn?sector=dmd"
           className="col-span-3 group relative rounded-xl border border-[#3fb950]/40 bg-surface
-                     hover:border-[#3fb950]/70 hover:bg-[#161b22] transition-all duration-200
+                     hover:border-[#3fb950]/70 hover:bg-surface-raised transition-all duration-200
                      shadow-[0_0_30px_rgba(63,185,80,0.08)] hover:shadow-[0_0_40px_rgba(63,185,80,0.14)]
                      overflow-hidden"
         >
@@ -79,11 +79,11 @@ export default function HubPage() {
                 </span>
                 <span className="text-[10px] text-muted">Genetic disease</span>
               </div>
-              <h2 className="text-2xl font-bold text-[#e6edf3] mt-2 tracking-tight">
+              <h2 className="text-2xl font-bold text-primary mt-2 tracking-tight">
                 DMD
               </h2>
-              <p className="text-[11px] text-muted/90 mt-0.5">Duchenne muscular dystrophy</p>
-              <p className="text-sm text-[#8b949e] mt-2 max-w-sm leading-relaxed">
+              <p className="text-[11px] text-muted mt-0.5">Duchenne muscular dystrophy</p>
+              <p className="text-sm text-secondary mt-2 max-w-sm leading-relaxed">
                 Three public names, 50+ catalysts, live prices, timelines, and AI diligence so you can follow what matters for the trade.
               </p>
             </div>

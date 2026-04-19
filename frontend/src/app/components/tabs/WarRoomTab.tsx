@@ -183,7 +183,7 @@ function StatusPulse({ tick }: { tick: number }) {
           ))}
           <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Agents active</span>
         </div>
-        <p key={tick} className="text-sm text-[#e6edf3] min-h-[2.5rem] leading-relaxed">
+        <p key={tick} className="text-sm text-primary min-h-[2.5rem] leading-relaxed">
           {STATUS_MESSAGES[tick % STATUS_MESSAGES.length]}
         </p>
         <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-border">
@@ -213,10 +213,10 @@ function AgentCard({ message, id }: { message: TranscriptMessage; id?: string })
             {cfg.label}
           </span>
           <span className="text-[10px] text-muted">·</span>
-          <span className="text-[10px] font-medium text-[#c9d1d9]">{message.agent}</span>
+          <span className="text-[10px] font-medium text-secondary">{message.agent}</span>
         </div>
         <p className="text-[9px] text-muted leading-snug mb-2">{cfg.tagline}</p>
-        <p className="text-xs text-[#c9d1d9] leading-relaxed whitespace-pre-wrap">{message.content}</p>
+        <p className="text-xs text-secondary leading-relaxed whitespace-pre-wrap">{message.content}</p>
       </div>
     </div>
   )
@@ -385,7 +385,7 @@ function SynthesisPanel({ synthesis }: { synthesis: SynthesisOutput }) {
 
       {/* Research summary */}
       <div className="px-5 py-4 border-b border-border">
-        <p className="text-xs text-[#e6edf3] leading-relaxed">{synthesis.research_summary}</p>
+        <p className="text-xs text-primary leading-relaxed">{synthesis.research_summary}</p>
       </div>
 
       {/* Key findings + Investor considerations */}
@@ -396,7 +396,7 @@ function SynthesisPanel({ synthesis }: { synthesis: SynthesisOutput }) {
             {synthesis.key_findings.map((f, i) => (
               <li key={i} className="flex gap-2">
                 <span className="text-accent shrink-0 mt-0.5">·</span>
-                <span className="text-xs text-[#c9d1d9] leading-relaxed">{f}</span>
+                <span className="text-xs text-secondary leading-relaxed">{f}</span>
               </li>
             ))}
           </ul>
@@ -407,7 +407,7 @@ function SynthesisPanel({ synthesis }: { synthesis: SynthesisOutput }) {
             {synthesis.investor_considerations.map((c, i) => (
               <li key={i} className="flex gap-2">
                 <span className="text-accent shrink-0 mt-0.5">→</span>
-                <span className="text-xs text-[#c9d1d9] leading-relaxed">{c}</span>
+                <span className="text-xs text-secondary leading-relaxed">{c}</span>
               </li>
             ))}
           </ul>
@@ -418,7 +418,7 @@ function SynthesisPanel({ synthesis }: { synthesis: SynthesisOutput }) {
       {synthesis.watch_list && (
         <div className="px-5 py-3 border-t border-border bg-accent/5 flex items-start gap-3">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-accent shrink-0 pt-0.5">Watch</span>
-          <p className="text-xs text-[#e6edf3] font-medium leading-relaxed">{synthesis.watch_list}</p>
+          <p className="text-xs text-primary font-medium leading-relaxed">{synthesis.watch_list}</p>
         </div>
       )}
     </div>
@@ -430,7 +430,7 @@ function InterimSummaryCard({ summary }: { summary: string }) {
   return (
     <div className="bg-surface border border-accent/20 rounded-lg px-5 py-4 flex gap-3">
       <span className="text-accent shrink-0 text-[10px] font-semibold uppercase tracking-widest pt-0.5">Round summary</span>
-      <p className="text-xs text-[#c9d1d9] leading-relaxed">{summary}</p>
+      <p className="text-xs text-secondary leading-relaxed">{summary}</p>
     </div>
   )
 }
@@ -495,7 +495,7 @@ function SteeringSection({
           onKeyDown={e => e.key === 'Enter' && directive.trim() && submit(directive.trim())}
           placeholder="Or type a custom directive…"
           disabled={loading}
-          className="flex-1 bg-canvas border border-border rounded px-3 py-2 text-xs text-[#e6edf3] placeholder-muted focus:outline-none focus:border-accent/60"
+          className="flex-1 bg-canvas border border-border rounded px-3 py-2 text-xs text-primary placeholder-muted focus:outline-none focus:border-accent/60"
         />
         <button
           onClick={() => directive.trim() ? submit(directive.trim()) : submit('')}
@@ -543,8 +543,8 @@ function ConfigForm({
                 className={[
                   'px-3 py-1.5 rounded text-[11px] font-medium transition-all',
                   persona === p
-                    ? 'bg-surface text-[#e6edf3] shadow-sm border border-border'
-                    : 'text-muted hover:text-[#e6edf3]',
+                    ? 'bg-surface text-primary shadow-sm border border-border'
+                    : 'text-muted hover:text-primary',
                   disabled ? 'cursor-not-allowed opacity-50' : '',
                 ].join(' ')}
               >
@@ -559,7 +559,7 @@ function ConfigForm({
             type="number" min={1} max={5} value={maxIter}
             onChange={e => setMaxIter(Number(e.target.value))}
             disabled={disabled}
-            className="w-full bg-canvas border border-border rounded px-2 py-2 text-xs text-[#e6edf3]"
+            className="w-full bg-canvas border border-border rounded px-2 py-2 text-xs text-primary"
           />
         </div>
       </div>
@@ -589,7 +589,7 @@ function ConfigForm({
           onKeyDown={e => e.key === 'Enter' && onRun()}
           placeholder="What should the agents research? (Enter to run)"
           disabled={disabled}
-          className="flex-1 bg-canvas border border-border rounded px-3 py-2 text-xs text-[#e6edf3] placeholder-muted focus:outline-none focus:border-accent/60"
+          className="flex-1 bg-canvas border border-border rounded px-3 py-2 text-xs text-primary placeholder-muted focus:outline-none focus:border-accent/60"
         />
         <button
           onClick={() => onRun()}
@@ -620,9 +620,6 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefill
   const [statusTick, setStatusTick] = useState(0)
   const [error, setError]           = useState<string | null>(null)
 
-  // When ticker actually changes, restore that ticker's saved state.
-  // Do not use a "first mount" flag: Strict Mode runs effects twice on mount, which would
-  // clear focus on the second run and wipe prefillFocus from "Research Barn" navigation.
   const prevTickerRef = useRef(ticker)
   useEffect(() => {
     if (prevTickerRef.current === ticker) return
@@ -633,7 +630,6 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefill
     setError(null)
   }, [ticker, saved])
 
-  // Handle prefillFocus changes after mount (e.g. clicking a second research angle)
   const prefillConsumedRef = useRef<string | undefined>(prefillFocus)
   useEffect(() => {
     if (!prefillFocus || prefillFocus === prefillConsumedRef.current) return
@@ -718,7 +714,7 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefill
   const isLoading = phase === 'loading'
 
   return (
-    <div className="max-w-4xl space-y-5">
+    <div className="w-full space-y-5">
 
       {/* ── Config panel — always visible when idle or complete ── */}
       {(phase === 'idle' || phase === 'complete') && (
@@ -728,7 +724,7 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefill
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
                 <p className="text-[10px] text-muted uppercase tracking-wider mb-0.5">Research question</p>
-                <p className="text-sm text-[#e6edf3] font-medium">{focus}</p>
+                <p className="text-sm text-primary font-medium">{focus}</p>
                 <p className="text-[10px] text-muted mt-1">
                   {persona} · {result.iterations_completed} iteration{result.iterations_completed !== 1 ? 's' : ''}
                 </p>
@@ -736,7 +732,7 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefill
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => { setPhase('idle') }}
-                  className="text-xs px-3 py-1.5 rounded border border-border text-muted hover:text-[#e6edf3] hover:border-accent/40 transition-colors"
+                  className="text-xs px-3 py-1.5 rounded border border-border text-muted hover:text-primary hover:border-accent/40 transition-colors"
                 >
                   New research
                 </button>
@@ -794,12 +790,12 @@ export default function WarRoomTab({ ticker, saved, onSave, onSynthesis, prefill
       {result && result.transcript.length > 0 && phase !== 'loading' && (
         <div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
-            <h2 className="text-xs font-semibold text-[#e6edf3] uppercase tracking-wider">
+            <h2 className="text-xs font-semibold text-primary uppercase tracking-wider">
               Multi-agent debate
             </h2>
             <span className="text-[10px] text-muted">
               {result.transcript.length} messages ·{' '}
-              <span className="font-mono text-[#c9d1d9]">${displayTicker(ticker)}</span>
+              <span className="font-mono text-secondary">${displayTicker(ticker)}</span>
             </span>
           </div>
           <TranscriptBody messages={result.transcript} defaultExpandAgents={phase === 'complete'} />

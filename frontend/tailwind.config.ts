@@ -2,6 +2,7 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       keyframes: {
@@ -24,13 +25,16 @@ const config: Config = {
         'war-blink': 'war-blink 1.2s ease-in-out infinite',
       },
       colors: {
-        canvas:   '#0d1117',
-        surface:  '#161b22',
-        border:   '#30363d',
-        accent:   '#58a6ff',
-        positive: '#3fb950',
-        negative: '#f85149',
-        muted:    '#8b949e',
+        canvas:         'var(--canvas)',
+        surface:        'var(--surface)',
+        'surface-raised': 'var(--surface-raised)',
+        border:         'var(--border)',
+        accent:         '#58a6ff',
+        positive:       '#3fb950',
+        negative:       '#f85149',
+        muted:          'var(--muted)',
+        primary:        'var(--text-primary)',
+        secondary:      'var(--text-secondary)',
       },
       fontFamily: {
         sans: ['var(--font-plex-sans)', 'system-ui', 'Segoe UI', 'sans-serif'],

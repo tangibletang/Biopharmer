@@ -69,7 +69,7 @@ const SECTOR_CONFIG: Record<string, SectorConfig> = {
 }
 
 // ── DMD Company Strip ────────────────────────────────────────────────────────
-// Prominent horizontal selector showing all 4 tickers with live prices
+// Prominent horizontal selector showing all tickers with live prices
 
 function DmdCompanyStrip({
   selected,
@@ -105,8 +105,8 @@ function DmdCompanyStrip({
             className={[
               'relative rounded-lg px-3 py-2 text-left transition-all duration-150 border',
               isActive
-                ? 'bg-[#161b22] border-border shadow-sm'
-                : 'bg-canvas border-transparent hover:bg-[#161b22] hover:border-border/60',
+                ? 'bg-surface border-border shadow-sm'
+                : 'bg-canvas border-transparent hover:bg-surface hover:border-border/60',
             ].join(' ')}
             style={isActive ? { borderColor: color + '60' } : {}}
           >
@@ -117,14 +117,20 @@ function DmdCompanyStrip({
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                <span className="text-sm font-bold font-mono" style={{ color: isActive ? color : '#c9d1d9' }}>
-                  ${displayTicker(t)}
+                <span
+                  className="text-sm font-bold font-mono"
+                  style={{ color: isActive ? color : undefined }}
+                >
+                  <span className={isActive ? '' : 'text-secondary'}>${displayTicker(t)}</span>
                 </span>
               </div>
               {summary ? (
                 <div className="text-right shrink-0">
-                  <div className="text-xs font-mono font-semibold" style={{ color: isActive ? color : '#e6edf3' }}>
-                    ${summary.price.toFixed(2)}
+                  <div
+                    className="text-xs font-mono font-semibold"
+                    style={{ color: isActive ? color : undefined }}
+                  >
+                    <span className={isActive ? '' : 'text-primary'}>${summary.price.toFixed(2)}</span>
                   </div>
                   <div className={['text-[10px] font-mono', positive ? 'text-positive' : 'text-negative'].join(' ')}>
                     {positive ? '+' : ''}{summary.changePct.toFixed(2)}%
@@ -187,13 +193,13 @@ function SectorSidebar({
               onClick={() => onSelect(c.ticker)}
               className={[
                 'w-full text-left rounded px-3 py-3 transition-colors',
-                isActive ? 'bg-[#1f2937] ring-1 ring-border' : 'hover:bg-[#1c2128]',
+                isActive ? 'bg-surface-raised ring-1 ring-border' : 'hover:bg-surface-raised/60',
               ].join(' ')}
             >
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                <span className="text-sm font-bold font-mono" style={{ color: isActive ? c.color : '#e6edf3' }}>
-                  ${c.ticker}
+                <span className="text-sm font-bold font-mono" style={{ color: isActive ? c.color : undefined }}>
+                  <span className={isActive ? '' : 'text-primary'}>${c.ticker}</span>
                 </span>
               </div>
               <div className="text-[10px] text-muted mt-0.5 pl-3.5 leading-tight">{c.name}</div>
@@ -270,7 +276,7 @@ function ResearchBarnContent() {
 
         {/* Top bar — mode toggle lives here */}
         <header className="flex items-center gap-4 px-6 py-3 border-b border-border bg-surface shrink-0">
-          <a href="/" className="text-xs text-muted hover:text-[#e6edf3] transition-colors tracking-widest uppercase shrink-0">
+          <a href="/" className="text-xs text-muted hover:text-primary transition-colors tracking-widest uppercase shrink-0">
             ← Hub
           </a>
 
@@ -281,8 +287,8 @@ function ResearchBarnContent() {
               className={[
                 'px-4 py-1.5 rounded text-xs font-semibold transition-all',
                 dmdMode === 'company'
-                  ? 'bg-surface text-[#e6edf3] shadow-sm'
-                  : 'text-muted hover:text-[#e6edf3]',
+                  ? 'bg-surface text-primary shadow-sm'
+                  : 'text-muted hover:text-primary',
               ].join(' ')}
             >
               Company View
@@ -292,8 +298,8 @@ function ResearchBarnContent() {
               className={[
                 'px-4 py-1.5 rounded text-xs font-semibold transition-all',
                 dmdMode === 'competitive'
-                  ? 'bg-[#1f2937] text-accent shadow-sm border border-border'
-                  : 'text-muted hover:text-[#e6edf3]',
+                  ? 'bg-surface-raised text-accent shadow-sm border border-border'
+                  : 'text-muted hover:text-primary',
               ].join(' ')}
             >
               ⊞ Competitive Overview
@@ -307,8 +313,8 @@ function ResearchBarnContent() {
         {dmdMode === 'competitive' && (
           <main className="flex-1 overflow-auto bg-canvas p-6">
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-[#e6edf3]">DMD — competitive timeline</h2>
-              <p className="text-xs text-muted mt-0.5">Four names on one axis · click an event for context</p>
+              <h2 className="text-sm font-semibold text-primary">DMD — competitive timeline</h2>
+              <p className="text-xs text-muted mt-0.5">Three names on one axis · click an event for context</p>
             </div>
             <ProximityMapTab ticker={dmdTicker} />
           </main>
@@ -324,7 +330,7 @@ function ResearchBarnContent() {
             />
 
             <div className="flex items-baseline gap-3 px-6 py-3 border-b border-border bg-canvas shrink-0">
-              <h1 className="text-xl font-bold font-mono tracking-tight text-[#e6edf3]">${displayTicker(dmdTicker)}</h1>
+              <h1 className="text-xl font-bold font-mono tracking-tight text-primary">${displayTicker(dmdTicker)}</h1>
               <span className="text-xs text-muted">DMD · live coverage</span>
             </div>
 
@@ -336,8 +342,8 @@ function ResearchBarnContent() {
                   className={[
                     'px-4 py-2 text-xs rounded-t transition-colors',
                     dmdTab === tab.id
-                      ? 'bg-surface text-[#e6edf3] border border-b-0 border-border'
-                      : 'text-muted hover:text-[#e6edf3]',
+                      ? 'bg-surface text-primary border border-b-0 border-border'
+                      : 'text-muted hover:text-primary',
                   ].join(' ')}
                 >
                   {tab.label}
@@ -387,7 +393,7 @@ function ResearchBarnContent() {
 
       <div className="flex flex-col flex-1 overflow-hidden">
         <header className="flex items-center gap-4 px-6 py-3 border-b border-border bg-surface shrink-0">
-          <a href="/" className="text-xs text-muted hover:text-[#e6edf3] transition-colors tracking-widest uppercase">
+          <a href="/" className="text-xs text-muted hover:text-primary transition-colors tracking-widest uppercase">
             ← Hub
           </a>
           <span className="text-xs text-muted" style={{ color: config.accentColor }}>
@@ -397,7 +403,7 @@ function ResearchBarnContent() {
         </header>
 
         <div className="flex items-baseline gap-3 px-6 py-4 border-b border-border shrink-0">
-          <h1 className="text-2xl font-bold font-mono tracking-tight text-[#e6edf3]">${sectorTicker}</h1>
+          <h1 className="text-2xl font-bold font-mono tracking-tight text-primary">${sectorTicker}</h1>
           <span className="text-sm text-muted">{config.universe}</span>
         </div>
 
@@ -409,8 +415,8 @@ function ResearchBarnContent() {
               className={[
                 'px-4 py-2 text-xs rounded-t transition-colors',
                 sectorTab === tab
-                  ? 'bg-surface text-[#e6edf3] border border-b-0 border-border'
-                  : 'text-muted hover:text-[#e6edf3]',
+                  ? 'bg-surface text-primary border border-b-0 border-border'
+                  : 'text-muted hover:text-primary',
               ].join(' ')}
             >
               {tab === 'timeline' ? 'Timeline' : 'The Research Barn'}

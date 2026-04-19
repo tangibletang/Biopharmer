@@ -35,17 +35,13 @@ function buildResearchAngles(milestone: Milestone, ticker: string) {
   const { label, detail, type, category } = milestone
   const outcome = type === 'positive' ? 'positive' : type === 'negative' ? 'negative' : 'mixed'
   const isProjected = category === 'projected'
-  const tense = isProjected ? 'upcoming' : 'recent'
 
-  // Detect event class from label keywords to sharpen questions
   const l = label.toLowerCase()
   const isTrialResult   = /trial|phase|data|readout|result|endpoint|efficacy|embark|precision/i.test(l)
   const isFdaAction     = /fda|nda|bla|pdufa|approval|label|indication|accelerated|pma/i.test(l)
   const isSafety        = /safety|ae|adverse|toxicity|death|liver|fatal|hold|pause/i.test(l)
   const isCommercial    = /launch|revenue|sales|market|commercial|prescription|reimburs/i.test(l)
-  const isPartnership   = /partner|collaborat|licens|deal|acqui|merge/i.test(l)
 
-  // Angle 1 — precedent, shaped by event class
   let precedentQ: string
   if (isFdaAction)
     precedentQ = `At peer DMD companies, what happened after a similar FDA ${outcome} decision — specifically ${label}? How did label language, PMR commitments, or restrictions play out, and what was the stock and commercial impact?`
@@ -58,7 +54,6 @@ function buildResearchAngles(milestone: Milestone, ticker: string) {
   else
     precedentQ = `At peer DMD companies, what happened after a comparable ${outcome} event — "${label}"? What were the downstream regulatory, clinical, and market consequences?`
 
-  // Angle 2 — what to expect next, shaped by projected vs historical
   let nextQ: string
   if (isProjected)
     nextQ = `$${ticker} has an upcoming event: "${label}" — ${detail} What are the realistic bull and bear scenarios, and what specific data points or regulatory signals should investors watch ahead of this?`
@@ -69,7 +64,6 @@ function buildResearchAngles(milestone: Milestone, ticker: string) {
   else
     nextQ = `Following "${label}" for $${ticker}, what are the most actionable next milestones investors should monitor? Consider regulatory timelines, competitive responses, and any clinical follow-on data expected.`
 
-  // Angle 3 — materiality, always specific to the detail
   const materiality = detail.length > 80 ? detail.slice(0, 120) + '…' : detail
   const materialQ = `How material is "${label}" to $${ticker}'s commercial trajectory? Specifically: ${materiality} — does this change the peak sales ceiling, addressable patient population, or competitive positioning versus DYNE, SRPT, and WVE?`
 
@@ -141,13 +135,13 @@ export default function MilestoneModal({ milestone, ticker, onClose, onInvestiga
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${styles.dot} shrink-0 mt-0.5`} />
-              <span className="text-[#e6edf3] font-semibold text-sm leading-snug">
+              <span className="text-primary font-semibold text-sm leading-snug">
                 {milestone.label}
               </span>
             </div>
             <button
               onClick={onClose}
-              className="text-muted hover:text-[#e6edf3] transition-colors shrink-0 text-lg leading-none"
+              className="text-muted hover:text-primary transition-colors shrink-0 text-lg leading-none"
             >
               ×
             </button>
@@ -163,7 +157,7 @@ export default function MilestoneModal({ milestone, ticker, onClose, onInvestiga
             </span>
           </div>
 
-          <p className="mt-3 text-sm text-[#c9d1d9] leading-relaxed">
+          <p className="mt-3 text-sm text-secondary leading-relaxed">
             {milestone.detail}
           </p>
         </div>
@@ -178,7 +172,7 @@ export default function MilestoneModal({ milestone, ticker, onClose, onInvestiga
                 onClick={loadSummary}
                 className="w-full text-left rounded-lg border border-border hover:border-accent/40 bg-surface hover:bg-surface/80 px-4 py-3.5 transition-colors group"
               >
-                <div className="text-xs font-semibold text-[#e6edf3] mb-0.5 group-hover:text-accent transition-colors">
+                <div className="text-xs font-semibold text-primary mb-0.5 group-hover:text-accent transition-colors">
                   Quick summary
                 </div>
                 <div className="text-[11px] text-muted leading-snug">
@@ -222,7 +216,7 @@ export default function MilestoneModal({ milestone, ticker, onClose, onInvestiga
                 )}
                 <button
                   onClick={() => setMode('choice')}
-                  className="ml-auto text-[10px] text-muted hover:text-[#e6edf3] transition-colors"
+                  className="ml-auto text-[10px] text-muted hover:text-primary transition-colors"
                 >
                   ← back
                 </button>
@@ -253,11 +247,11 @@ export default function MilestoneModal({ milestone, ticker, onClose, onInvestiga
                   </div>
                   <div>
                     <div className="text-[10px] text-muted uppercase tracking-wider mb-1">What this means</div>
-                    <p className="text-sm text-[#c9d1d9] leading-relaxed">{analysis.explanation}</p>
+                    <p className="text-sm text-secondary leading-relaxed">{analysis.explanation}</p>
                   </div>
                   <div>
                     <div className="text-[10px] text-muted uppercase tracking-wider mb-1">Peer precedent</div>
-                    <p className="text-xs text-[#c9d1d9] leading-relaxed italic">{analysis.peer_precedent}</p>
+                    <p className="text-xs text-secondary leading-relaxed italic">{analysis.peer_precedent}</p>
                   </div>
                 </div>
               )}
@@ -268,7 +262,7 @@ export default function MilestoneModal({ milestone, ticker, onClose, onInvestiga
         {/* Footer */}
         <div className="px-6 py-3 border-t border-border flex justify-between items-center">
           <span className="text-[10px] text-muted">AI-generated · Not financial advice</span>
-          <button onClick={onClose} className="text-xs text-muted hover:text-[#e6edf3] transition-colors">
+          <button onClick={onClose} className="text-xs text-muted hover:text-primary transition-colors">
             Close
           </button>
         </div>

@@ -78,6 +78,35 @@ function milestoneMapForSeries(milestones: Milestone[], seriesDates: string[]): 
   return out
 }
 
+// ── Theme-aware chart colors ──────────────────────────────────────────────────
+
+function useChartColors() {
+  const [colors, setColors] = useState({
+    grid: '#21262d',
+    tick: '#8b949e',
+    canvas: '#0d1117',
+    border: '#30363d',
+  })
+
+  useEffect(() => {
+    const read = () => {
+      const s = getComputedStyle(document.documentElement)
+      setColors({
+        grid:   s.getPropertyValue('--surface-raised').trim() || '#21262d',
+        tick:   s.getPropertyValue('--muted').trim() || '#8b949e',
+        canvas: s.getPropertyValue('--canvas').trim() || '#0d1117',
+        border: s.getPropertyValue('--border').trim() || '#30363d',
+      })
+    }
+    read()
+    const obs = new MutationObserver(read)
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => obs.disconnect()
+  }, [])
+
+  return colors
+}
+
 // ── Chart dot with hover glow ─────────────────────────────────────────────────
 // NOTE: No mouse handlers here — hover is detected at the LineChart level via
 // onMouseMove to avoid a re-mount loop (dot re-mounts on state change → fires
@@ -88,18 +117,19 @@ function MilestoneDot(props: {
   mmap: Map<string, Milestone>
   hovered: string | null
   onOpen: (m: Milestone) => void
+  canvasColor: string
 }) {
-  const { cx = 0, cy = 0, payload, mmap, hovered, onOpen } = props
+  const { cx = 0, cy = 0, payload, mmap, hovered, onOpen, canvasColor } = props
   if (!payload) return null
   const m = mmap.get(payload.date)
-  if (!m) return <circle cx={cx} cy={cy} r={2} fill="#21262d" />
+  if (!m) return <circle cx={cx} cy={cy} r={2} fill={canvasColor} />
   const col   = TYPE_COLOR[m.type]
   const isHot = hovered === m.label
   return (
     <g style={{ cursor: 'pointer' }} onClick={() => onOpen(m)}>
       {isHot && <circle cx={cx} cy={cy} r={16} fill={col} fillOpacity={0.12} />}
       {isHot && <circle cx={cx} cy={cy} r={11} fill={col} fillOpacity={0.18} />}
-      <circle cx={cx} cy={cy} r={isHot ? 8 : 6} fill={col} stroke="#0d1117" strokeWidth={2} />
+      <circle cx={cx} cy={cy} r={isHot ? 8 : 6} fill={col} stroke={canvasColor} strokeWidth={2} />
     </g>
   )
 }
@@ -115,7 +145,7 @@ function ChartTip({ active, payload, mmap }: {
   return (
     <div className="bg-surface border border-border rounded p-3 text-xs shadow-xl">
       <div className="text-muted mb-1">{date}</div>
-      <div className="text-[#e6edf3] font-semibold">${price.toFixed(2)}</div>
+      <div className="text-primary font-semibold">${price.toFixed(2)}</div>
       {m && (
         <>
           <div className="mt-1.5 pt-1.5 border-t border-border text-[11px] max-w-[180px] leading-snug text-muted">{m.label}</div>
@@ -137,11 +167,12 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const [pricesError, setPricesError]     = useState<string | null>(null)
   /** Last two daily closes (same as top strip) — 1D chart is intraday but header stats stay daily. */
   const [dailyStrip, setDailyStrip] = useState<{ last: number; prev: number } | null>(null)
-  /** True while 6mo fetch runs so we never show intraday first→last as a fake “daily” %. */
+  /** True while 6mo fetch runs so we never show intraday first→last as a fake "daily" %. */
   const [dailyStripSyncing, setDailyStripSyncing] = useState(false)
   const timelineScrollRef = useRef<HTMLDivElement>(null)
   const hoverSrcRef       = useRef<HoverSrc>(null)
   const [todayStr, setTodayStr] = useState<string | null>(null)
+  const chartColors = useChartColors()
 
   const setHover = (label: string | null, src: HoverSrc) => {
     hoverSrcRef.current = src
@@ -151,7 +182,6 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   useEffect(() => { setTodayStr(localDateISO(new Date())) }, [])
 
   // Clear stale data only when the ticker changes, not on period changes.
-  // This keeps the previous period's chart visible while the new period loads.
   useEffect(() => {
     setYahooPrices(null)
     setPricesError(null)
@@ -261,7 +291,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const priceMax = chartPrices.length ? Math.max(...chartPrices.map(p => p.price)) : 1
   const ppad     = Math.max((priceMax - priceMin) * 0.08, 0.01)
   const is1dIntraday = period === '1d' && seriesDates.length > 0 && seriesDates[0].includes(' ')
-  // Never use intraday first→last for header on 1D — wait for dailyStrip (avoids wrong % then flash).
+  // Never use intraday first→last for header on 1D — wait for dailyStrip.
   const latestPrice = !is1dIntraday
     ? chartPrices.at(-1)?.price ?? null
     : dailyStrip
@@ -321,10 +351,10 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
         <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-2">
           <div>
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-base font-bold font-mono text-[#e6edf3]">${displayTicker(ticker)}</span>
+              <span className="text-base font-bold font-mono text-primary">${displayTicker(ticker)}</span>
               {showHeaderNumbers && latestPrice != null && periodChange != null && periodChangePct != null && (
                 <>
-                  <span className="text-lg font-semibold font-mono text-[#e6edf3]">${latestPrice.toFixed(2)}</span>
+                  <span className="text-lg font-semibold font-mono text-primary">${latestPrice.toFixed(2)}</span>
                   <span className={['text-xs font-mono', periodChange >= 0 ? 'text-positive' : 'text-negative'].join(' ')}>
                     {periodChange >= 0 ? '+' : ''}{periodChange.toFixed(2)} ({periodChange >= 0 ? '+' : ''}{periodChangePct.toFixed(2)}%)
                   </span>
@@ -348,7 +378,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
             {PERIODS.map(p => (
               <button key={p.value} onClick={() => setPeriod(p.value)}
                 className={['px-2 py-1 rounded text-[10px] font-semibold transition-all',
-                  period === p.value ? 'bg-[#1f2937] text-[#e6edf3]' : 'text-muted hover:text-[#e6edf3]',
+                  period === p.value ? 'bg-surface-raised text-primary' : 'text-muted hover:text-primary',
                 ].join(' ')}>
                 {p.label}
               </button>
@@ -369,9 +399,9 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                 }}
                 onMouseLeave={() => setHover(null, null)}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#21262d" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
                 <XAxis dataKey="date" tickLine={false} axisLine={false}
-                  tick={{ fill: '#8b949e', fontSize: 9 }}
+                  tick={{ fill: chartColors.tick, fontSize: 9 }}
                   ticks={xTicks}
                   tickFormatter={d => {
                     if (d.includes(' ')) {
@@ -392,7 +422,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                 />
                 <YAxis domain={[priceMin - ppad, priceMax + ppad]}
                   tickLine={false} axisLine={false}
-                  tick={{ fill: '#8b949e', fontSize: 9 }}
+                  tick={{ fill: chartColors.tick, fontSize: 9 }}
                   tickFormatter={v => `$${v.toFixed(0)}`}
                   width={44}
                 />
@@ -406,13 +436,14 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                   strokeOpacity={hoveredChartDate ? 0.8 : 0}
                   ifOverflow="hidden"
                 />
-                <Tooltip content={<ChartTip mmap={mmap} />} cursor={{ stroke: '#30363d', strokeWidth: 1 }} />
+                <Tooltip content={<ChartTip mmap={mmap} />} cursor={{ stroke: chartColors.border, strokeWidth: 1 }} />
                 <Line type="monotone" dataKey="price" stroke={data.color} strokeWidth={1.5}
                   isAnimationActive={false}
                   dot={(p: { cx?: number; cy?: number; payload?: { date: string } }) => (
                     <MilestoneDot key={p.payload?.date} {...p}
                       mmap={mmap} hovered={hovered}
                       onOpen={setSelected}
+                      canvasColor={chartColors.canvas}
                     />
                   )}
                   activeDot={false}
@@ -437,7 +468,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
             {(['all', 'historical', 'projected'] as Filter[]).map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 className={['px-3 py-1.5 rounded text-xs font-semibold transition-all',
-                  filter === f ? (f === 'projected' ? 'bg-accent text-canvas' : 'bg-[#1f2937] text-[#e6edf3]') : 'text-muted hover:text-[#e6edf3]',
+                  filter === f ? (f === 'projected' ? 'bg-accent text-canvas' : 'bg-surface-raised text-primary') : 'text-muted hover:text-primary',
                 ].join(' ')}>
                 {f === 'all' ? 'All Events' : f === 'historical' ? '◷ Historical' : '◈ Projected'}
               </button>
@@ -454,16 +485,16 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
 
             <svg width={TW} height={SH}
               style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible' }}>
-              <line x1={PAD/2} y1={SY} x2={TW-PAD/2} y2={SY} stroke="#30363d" strokeWidth={1} />
+              <line x1={PAD/2} y1={SY} x2={TW-PAD/2} y2={SY} stroke="var(--border)" strokeWidth={1} />
 
               {['2024','2025','2026','2027'].map(y => (
                 <g key={y}>
-                  <line x1={dx(`${y}-01-01`)} y1={SY-10} x2={dx(`${y}-01-01`)} y2={SY+10} stroke="#484f58" strokeWidth={1} />
-                  <text x={dx(`${y}-07-01`)} y={SY+28} textAnchor="middle" fill="#484f58"
-                    fontSize={11} fontFamily="var(--font-plex-mono),ui-monospace,monospace" fontWeight="600">{y}</text>
+                  <line x1={dx(`${y}-01-01`)} y1={SY-10} x2={dx(`${y}-01-01`)} y2={SY+10} stroke="var(--muted)" strokeWidth={1} strokeOpacity={0.5} />
+                  <text x={dx(`${y}-07-01`)} y={SY+28} textAnchor="middle" fill="var(--muted)"
+                    fontSize={11} fontFamily="var(--font-plex-mono),ui-monospace,monospace" fontWeight="600" fillOpacity={0.6}>{y}</text>
                 </g>
               ))}
-              <line x1={dx('2028-01-01')} y1={SY-6} x2={dx('2028-01-01')} y2={SY+6} stroke="#484f58" strokeWidth={1} />
+              <line x1={dx('2028-01-01')} y1={SY-6} x2={dx('2028-01-01')} y2={SY+6} stroke="var(--muted)" strokeWidth={1} strokeOpacity={0.4} />
 
               {todayX != null && (
                 <g>
@@ -484,7 +515,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     onMouseLeave={() => setHover(null, null)}
                     onClick={() => setSelected(m)}>
                     <line x1={x} y1={SY-DR-2} x2={x} y2={SY-DR-CH} stroke={col} strokeWidth={1} strokeOpacity={0.35} />
-                    <circle cx={x} cy={SY} r={DR} fill={col} stroke="#161b22" strokeWidth={2} />
+                    <circle cx={x} cy={SY} r={DR} fill={col} stroke="var(--surface)" strokeWidth={2} />
                   </g>
                 )
               })}
@@ -497,7 +528,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     onMouseLeave={() => setHover(null, null)}
                     onClick={() => setSelected(m)}>
                     <line x1={x} y1={SY+DR+2} x2={x} y2={SY+DR+CH} stroke={col} strokeWidth={1} strokeDasharray="3 3" strokeOpacity={0.35} />
-                    <circle cx={x} cy={SY} r={DR} fill="#161b22" stroke={col} strokeWidth={2} strokeDasharray="4 2" />
+                    <circle cx={x} cy={SY} r={DR} fill="var(--canvas)" stroke={col} strokeWidth={2} strokeDasharray="4 2" />
                   </g>
                 )
               })}
@@ -517,8 +548,8 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     <circle cx={x} cy={SY} r={DR+9} fill={col} fillOpacity={0.15} />
                     <circle cx={x} cy={SY} r={DR+5} fill={col} fillOpacity={0.2} />
                     {isHistorical
-                      ? <circle cx={x} cy={SY} r={DR+2} fill={col} stroke="#161b22" strokeWidth={2} />
-                      : <circle cx={x} cy={SY} r={DR+2} fill="#161b22" stroke={col} strokeWidth={2.5} strokeDasharray="4 2" />
+                      ? <circle cx={x} cy={SY} r={DR+2} fill={col} stroke="var(--surface)" strokeWidth={2} />
+                      : <circle cx={x} cy={SY} r={DR+2} fill="var(--canvas)" stroke={col} strokeWidth={2.5} strokeDasharray="4 2" />
                     }
                   </g>
                 )
@@ -536,13 +567,13 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     width: CW, height: CARD_H, opacity: isHot ? 1 : opa('historical'), transition: 'all 0.15s',
                     zIndex: isHot ? 10 : 1,
                     borderColor: isHot ? col : undefined,
-                    backgroundColor: isHot ? '#1c2128' : undefined,
+                    backgroundColor: isHot ? 'var(--surface-raised)' : undefined,
                     boxShadow: isHot ? `0 0 16px ${col}50, 0 0 0 1px ${col}40` : undefined,
                   }}
                   className="text-left bg-canvas border border-border rounded-lg p-2.5"
                 >
                   <div className="text-[9px] font-mono text-muted mb-1">{m.date}</div>
-                  <div className="text-[11px] font-semibold text-[#e6edf3] leading-tight"
+                  <div className="text-[11px] font-semibold text-primary leading-tight"
                     style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {m.label}
                   </div>
@@ -563,7 +594,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     width: CW, height: CARD_H, opacity: isHot ? 1 : opa('projected'), transition: 'all 0.15s',
                     zIndex: isHot ? 10 : 1,
                     borderColor: isHot ? col : undefined,
-                    backgroundColor: isHot ? '#1c2128' : undefined,
+                    backgroundColor: isHot ? 'var(--surface-raised)' : undefined,
                     boxShadow: isHot ? `0 0 16px ${col}50, 0 0 0 1px ${col}40` : undefined,
                   }}
                   className="text-left bg-canvas border border-dashed border-border rounded-lg p-2.5"
@@ -572,7 +603,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     <div className="text-[9px] font-mono text-muted">{m.date}</div>
                     <span className="text-[8px] text-muted border border-border rounded px-1 ml-auto">est.</span>
                   </div>
-                  <div className="text-[11px] font-semibold text-[#e6edf3] leading-tight"
+                  <div className="text-[11px] font-semibold text-primary leading-tight"
                     style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {m.label}
                   </div>

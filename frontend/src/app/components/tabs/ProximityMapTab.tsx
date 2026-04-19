@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, Legend,
@@ -18,6 +18,28 @@ const TYPE_COLOR = {
   negative: '#f85149',
   neutral:  '#58a6ff',
 } as const
+
+// ── Theme-aware chart colors ──────────────────────────────────────────────────
+
+function useChartColors() {
+  const [colors, setColors] = useState({ grid: '#30363d', tick: '#8b949e' })
+
+  useEffect(() => {
+    const read = () => {
+      const s = getComputedStyle(document.documentElement)
+      setColors({
+        grid: s.getPropertyValue('--border').trim() || '#30363d',
+        tick: s.getPropertyValue('--muted').trim() || '#8b949e',
+      })
+    }
+    read()
+    const obs = new MutationObserver(read)
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => obs.disconnect()
+  }, [])
+
+  return colors
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -96,7 +118,7 @@ function EventCard({ ticker, milestone, onClose }: {
           />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-[#e6edf3]">{milestone.label}</span>
+              <span className="text-xs font-semibold text-primary">{milestone.label}</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded border ${
                 isFuture
                   ? 'border-accent/30 text-accent bg-accent/10'
@@ -113,9 +135,9 @@ function EventCard({ ticker, milestone, onClose }: {
             </div>
           </div>
         </div>
-        <button onClick={onClose} className="text-muted hover:text-[#e6edf3] text-lg leading-none shrink-0">×</button>
+        <button onClick={onClose} className="text-muted hover:text-primary text-lg leading-none shrink-0">×</button>
       </div>
-      <p className="text-xs text-[#c9d1d9] leading-relaxed border-l-2 pl-3" style={{ borderColor: color }}>
+      <p className="text-xs text-secondary leading-relaxed border-l-2 pl-3" style={{ borderColor: color }}>
         {milestone.detail}
       </p>
     </div>
@@ -152,7 +174,7 @@ function EventRow({ ticker, milestone, isSelected, onClick }: {
           <span className="text-[10px] font-bold shrink-0" style={{ color }}>
             ${displayTicker(ticker)}
           </span>
-          <span className="text-xs text-[#e6edf3] truncate">{milestone.label}</span>
+          <span className="text-xs text-primary truncate">{milestone.label}</span>
         </div>
         <span className="text-[10px] text-muted">{formatDate(milestone.date)}</span>
       </div>
@@ -196,6 +218,7 @@ export default function ProximityMapTab({ ticker }: Props) {
   const [selectedEvent, setSelectedEvent] = useState<{ ticker: Ticker; milestone: Milestone } | null>(null)
   const [eventFilter, setEventFilter] = useState<'all' | 'historical' | 'projected'>('all')
   const [highlightTicker, setHighlightTicker] = useState<Ticker | null>(null)
+  const chartColors = useChartColors()
 
   // Toggle a ticker's price line
   const toggleTicker = (t: Ticker) => {
@@ -242,12 +265,12 @@ export default function ProximityMapTab({ ticker }: Props) {
   const refLineDate = selectedEvent?.milestone.date
 
   return (
-    <div className="space-y-5 max-w-5xl">
+    <div className="space-y-5">
 
       {/* ── Header ── */}
       <div className="flex items-baseline justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-[#e6edf3]">Competitive Timeline</h2>
+          <h2 className="text-sm font-semibold text-primary">Competitive Timeline</h2>
           <p className="text-xs text-muted mt-0.5">
             Normalised to % change from Jan 2024 — click any event to see details
           </p>
@@ -276,21 +299,21 @@ export default function ProximityMapTab({ ticker }: Props) {
 
       {/* ── Price chart ── */}
       <div className="bg-surface border border-border rounded-lg p-5">
-        <div className="h-64">
+        <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
-              <CartesianGrid stroke="#30363d" strokeDasharray="3 6" vertical={false} />
+              <CartesianGrid stroke={chartColors.grid} strokeDasharray="3 6" vertical={false} />
               <XAxis
                 dataKey="date"
                 tickFormatter={formatDate}
-                tick={{ fill: '#6e7681', fontSize: 10 }}
+                tick={{ fill: chartColors.tick, fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 interval={11}
               />
               <YAxis
                 tickFormatter={v => `${v >= 0 ? '+' : ''}${v}%`}
-                tick={{ fill: '#6e7681', fontSize: 10 }}
+                tick={{ fill: chartColors.tick, fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 width={52}
@@ -336,7 +359,7 @@ export default function ProximityMapTab({ ticker }: Props) {
       {/* ── Upcoming catalysts ── */}
       <div className="bg-surface border border-border rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-          <span className="text-xs font-semibold text-[#e6edf3]">Upcoming catalysts</span>
+          <span className="text-xs font-semibold text-primary">Upcoming catalysts</span>
           <span className="text-[10px] text-muted">{upcomingCatalysts.length} events projected</span>
         </div>
         <div className="divide-y divide-border/50">
@@ -367,7 +390,7 @@ export default function ProximityMapTab({ ticker }: Props) {
       {/* ── Full event feed ── */}
       <div className="bg-surface border border-border rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-          <span className="text-xs font-semibold text-[#e6edf3]">Event feed</span>
+          <span className="text-xs font-semibold text-primary">Event feed</span>
           <div className="flex gap-1">
             {(['all', 'historical', 'projected'] as const).map(f => (
               <button
@@ -377,7 +400,7 @@ export default function ProximityMapTab({ ticker }: Props) {
                   'text-[10px] px-2.5 py-1 rounded transition-colors capitalize',
                   eventFilter === f
                     ? 'bg-accent/15 text-accent border border-accent/30'
-                    : 'text-muted hover:text-[#e6edf3] border border-transparent',
+                    : 'text-muted hover:text-primary border border-transparent',
                 ].join(' ')}
               >
                 {f}
