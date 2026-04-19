@@ -26,7 +26,7 @@ The Research Barn is an **iterative, human-steered diligence engine**: you bring
 3. **Explorers (parallel)** — Up to three specialist explorers run concurrently (`asyncio.gather`). Each picks an angle aligned with its role and may call tools. Their outputs are appended as distinct voices.
 4. **Critics (parallel)** — Two adversarial critics attack the explorers' logic—missing data, regulatory risk, competition, valuation sensitivity—also in parallel.
 5. **Steering prep** — A fast model produces an interim summary and three suggested "next move" directives (clickable pills in the UI) aligned with your persona.
-6. **Human checkpoint** — The run **pauses**. You continue as-is, pick a suggested direction, or type a custom directive. The backend resumes the same thread via `POST /api/diligence/resume`.
+6. **Human checkpoint** — The run pauses. You continue as-is, pick a suggested direction, or type a custom directive. The backend resumes the same thread via `POST /api/diligence/resume`.
 7. **Synthesis** — After all rounds complete, a synthesizer turns the full transcript into JSON: research summary, key findings, investor-stance considerations, and a single watch-list line—grounded in what was actually argued.
 
 Loop: **orchestrate → explore (tools) → criticize → summarize & suggest → *you steer* → repeat → synthesize.**
