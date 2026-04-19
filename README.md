@@ -2,11 +2,13 @@
 
 **Live demo:** https://biopharmer.vercel.app/
 
-During my internship at Dyne Therapeutics, I realized that applying rigorous scientific research could give an edge in biotech investing. With my Roth IRA contribution, I performed very well on an investment simply informed by a literature review I participated in. It reinforced a simple thesis: if the science is good, the company has a good chance of succeeding.
+During my internship at Dyne Therapeutics, I realized that applying rigorous scientific research could give an edge in biotech investing. Using my Roth IRA, I performed very well on an investment simply informed by a literature review I participated in. It reinforced a simple thesis: if the science is good, the company has a good chance of succeeding.
 
-In biotech, stock prices swing violently based on clinical milestones and data readouts. Yet, most investors sit on the sidelines because the necessary information is scattered, siloed, or trapped behind paywalls. You shouldn't have to hunt down papers on PubMed or subscribe to 10 free trials to track upcoming events, stock prices, and potential market warnings.
+Typically, casual stock investors (a lot of college students) will invest in companies they know or are familiar with. Think: Apple, Amazon, or Meta. Most people don't interact with biotech companies in their everyday lives. Additionally, biotech stock prices tend to swing violently based on clinical milestones and data readouts. Combined with the fact that clinical trial news, upcoming milestones, and drug development for biotech companies is often scattered or trapped behind paywalls, biotech investing becomes daunting and tedious.
 
-Biopharmer consolidates this workflow into a single research workspace. Users get a live price timeline with clinical milestones and a mechanism similarity map. At its core is the Research Barn: a multi-agent diligence engine where adversarial AI agents independently research, debate, and critique each other's findings on any ticker. With tools allowing agents to pull from PubMed, openFDA, and pgvector-ranked scientific peers, it acts as a strategy board to synthesize complex data and strip away the uncertainty.
+I made Biopharmer targeted towards casual investors with some minor biology/biotech domain knowledge that they can use to make investment decisions.
+
+Biopharmer consolidates this workflow into a single research workspace. I believe you shouldn't have to hunt down papers on PubMed or subscribe to 10 free trials to track upcoming events, stock prices, and potential market warnings. Users get a live price timeline with clinical milestones and a mechanism similarity map. At its core is the Research Barn: a multi-agent diligence engine where adversarial AI agents independently research, debate, and critique each other's findings on any ticker. With tools allowing agents to pull from PubMed, openFDA, and pgvector-ranked scientific peers, it acts as a strategy board to synthesize complex data and strip away the uncertainty.
 
 Currently built around a live Duchenne muscular dystrophy (DMD) coverage slice (DYNE, SRPT, WVE).
 
