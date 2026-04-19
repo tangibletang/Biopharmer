@@ -116,7 +116,12 @@ function ChartTip({ active, payload, mmap }: {
     <div className="bg-surface border border-border rounded p-3 text-xs shadow-xl">
       <div className="text-muted mb-1">{date}</div>
       <div className="text-[#e6edf3] font-semibold">${price.toFixed(2)}</div>
-      {m && <div className="mt-1.5 pt-1.5 border-t border-border text-[11px] max-w-[180px] leading-snug text-muted">{m.label}</div>}
+      {m && (
+        <>
+          <div className="mt-1.5 pt-1.5 border-t border-border text-[11px] max-w-[180px] leading-snug text-muted">{m.label}</div>
+          <div className="mt-2 pt-1.5 border-t border-border text-[10px] text-accent font-medium">Click to open · auto-fills Research Barn</div>
+        </>
+      )}
     </div>
   )
 }
@@ -421,7 +426,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
           )}
         </div>
         <div className="px-4 pb-2.5 text-[10px] text-muted">
-          Hover colored dots to link with the timeline below · click to open analysis
+          Hover colored dots to preview · click to open analysis and auto-fill the Research Barn
         </div>
       </div>
 
@@ -541,6 +546,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {m.label}
                   </div>
+                  {isHot && <div className="mt-1.5 text-[9px] text-accent font-medium">Click to analyze →</div>}
                   <div className="mt-2" style={{ width: 20, height: 2, backgroundColor: col, borderRadius: 1 }} />
                 </button>
               )
@@ -570,6 +576,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {m.label}
                   </div>
+                  {isHot && <div className="mt-1.5 text-[9px] text-accent font-medium">Click to analyze →</div>}
                   <div className="mt-2" style={{ width: 20, height: 2, backgroundColor: col, borderRadius: 1, opacity: 0.55 }} />
                 </button>
               )
