@@ -272,6 +272,31 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
   const periodChangePct =
     periodChange != null && periodBaseline ? (periodChange / periodBaseline) * 100 : null
 
+  // Explicit tick list so each label appears exactly once (no duplicate "Apr Apr Apr").
+  const xTicks = useMemo(() => {
+    if (isIntraday || !chartPrices.length) return undefined
+    const dates = chartPrices.map(p => p.date)
+    const seen  = new Set<string>()
+    if (period === ‘5y’) {
+      // One tick per 6-month window (Jan, Jul of each year)
+      return dates.filter(d => {
+        const [yr, mo] = d.split(‘-’)
+        const half = +mo <= 6 ? ‘H1’ : ‘H2’
+        const key  = `${yr}-${half}`
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+    }
+    // 6mo / ytd / 1y / 1mo: one tick per calendar month
+    return dates.filter(d => {
+      const key = d.slice(0, 7) // YYYY-MM
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }, [chartPrices, period, isIntraday])
+
   // Don’t show header $/% from a **stale** Yahoo series (wrong window) while a new period is loading.
   const hasLivePrices = !!(yahooPrices?.prices?.length)
   const liveSeriesAligned =
@@ -353,6 +378,7 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                 <CartesianGrid strokeDasharray="3 3" stroke="#21262d" vertical={false} />
                 <XAxis dataKey="date" tickLine={false} axisLine={false}
                   tick={{ fill: '#8b949e', fontSize: 9 }}
+                  ticks={xTicks}
                   tickFormatter={d => {
                     if (d.includes(' ')) {
                       // Intraday: "2024-01-15 09:30"
@@ -363,14 +389,12 @@ export default function TimelineTab({ ticker, onInvestigate }: { ticker: string;
                     }
                     const [yr, mo, dd] = d.split('-')
                     const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1]
-                    // Short periods: show "Mar 18" so same-month ticks are distinguishable
                     if (period === '1mo') return `${month} ${+dd}`
-                    // Multi-year: show year on every tick
                     if (period === '5y') return `${month} '${yr.slice(2)}`
-                    // Default: month name, with year annotation on January
+                    // Default: just month name; January gets year annotation
                     return mo === '01' ? `${month} '${yr.slice(2)}` : month
                   }}
-                  minTickGap={32}
+                  minTickGap={20}
                 />
                 <YAxis domain={[priceMin - ppad, priceMax + ppad]}
                   tickLine={false} axisLine={false}
