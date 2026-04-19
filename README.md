@@ -1,5 +1,7 @@
 # Biopharmer
 
+**Live demo:** https://biopharmer.vercel.app/
+
 During my internship at Dyne Therapeutics, I realized that applying rigorous scientific research could give an edge in biotech investing. With my Roth IRA contribution, I performed very well on an investment simply informed by a literature review I participated in. It reinforced a simple thesis: if the science is good, the company has a good chance of succeeding.
 
 In biotech, valuations swing violently based on clinical milestones and data readouts—yet most investors sit on the sidelines because the necessary information is scattered, siloed, or trapped behind paywalls. You shouldn't have to hunt down papers on PubMed or subscribe to 10 free trials to track upcoming events, stock prices, and potential market warnings.
@@ -16,8 +18,8 @@ Currently built around a live Duchenne muscular dystrophy (DMD) coverage slice (
 
 | Layer | Choices |
 |-------|---------|
-| **Frontend** | Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS, Recharts |
-| **Backend** | FastAPI (Python); async agent pipeline with in-memory thread sessions |
+| **Frontend** | Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS, Recharts — hosted on [Vercel](https://vercel.com/) |
+| **Backend** | FastAPI (Python); async agent pipeline with in-memory thread sessions — hosted on [Railway](https://railway.app/) |
 | **Data & ML** | Supabase Postgres + pgvector for embedding similarity; OpenAI chat + embeddings |
 | **Market data** | yfinance (Yahoo Finance) for daily prices; optional Alpha Vantage when configured |
 
