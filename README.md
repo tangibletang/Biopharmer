@@ -2,7 +2,7 @@
 
 **Live demo:** https://biopharmer.vercel.app/
 
-During my internship at Dyne Therapeutics, I realized that applying rigorous scientific research could give an edge in biotech investing. Using my Roth IRA, I performed very well on an investment simply informed by a literature review I participated in. I realized that more often than not, if the science is good, the company has a good chance of succeeding. 
+During my internship at Dyne Therapeutics, a literature review I worked on directly informed a few highly successful personal biotech investments. It taught me that more often that not, if the science is sound, the company will succeed. I made this project to see if I could make the link between science and biotech investing more transparent.
 
 Typically, casual stock investors (a lot of college students) will invest in companies they know or are familiar with. Think: Apple, Amazon, or Meta. Most people don't interact with biotech companies in their everyday lives. Additionally, biotech stock prices tend to swing violently based on clinical milestones and data readouts. Combined with the fact that clinical trial news, upcoming milestones, and drug development for biotech companies is often scattered or trapped behind paywalls, biotech investing becomes daunting and tedious.
 
