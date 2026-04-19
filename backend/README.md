@@ -42,7 +42,7 @@ All API routes are under `/api` except **`GET /health`**.
 | GET | `/api/prices/{ticker}` | Daily prices (`period` query; Alpha Vantage when configured, else Yahoo — see below) |
 | POST | `/api/milestone/analyze` | Short AI analysis for a single milestone (timeline modal) |
 
-**Valid DMD tickers** for diligence and peers: `DYNE`, `RNA`, `SRPT`, `WVE` (API may normalize display symbols).
+**Valid DMD tickers** for diligence and peers: `DYNE`, `SRPT`, `WVE`.
 
 **Removed / not shipped:** there is no `GET /api/diligence/{ticker}` parallel-debate endpoint; diligence is **only** the iterative start/resume flow in [`app/agents/iterative_war_room.py`](app/agents/iterative_war_room.py).
 
@@ -70,6 +70,16 @@ All API routes are under `/api` except **`GET /health`**.
 
 **Operational note:** Thread state is held **in memory** on the API process (`_sessions` in `iterative_war_room.py`). A **server restart** drops paused threads—clients should treat `thread_id` as best-effort until you add external persistence.
 
+### Explorer tools
+
+Explorers share a `gpt-4o` model with tool-calling enabled. Three tools are available; the prompt instructs explorers to use them only when they add concrete evidence.
+
+| Tool | External API | What it returns |
+|------|-------------|-----------------|
+| `pgvector_peers` | Internal Postgres | Cosine-similarity peers for the ticker — similarity score, Emax %, half-life, Grade 3+ AE rate |
+| `openfda_adverse_events` | [openFDA](https://open.fda.gov/apis/drug/event/) | Adverse event reports for a drug or compound name — seriousness flag and MedDRA reaction terms |
+| `clinicaltrials_lookup` | [ClinicalTrials.gov v2 API](https://clinicaltrials.gov/data-api/api) | Trial phase, status, enrollment, primary completion date, primary endpoint, and sponsor — no API key required |
+
 ---
 
 ### Prices
@@ -77,7 +87,7 @@ All API routes are under `/api` except **`GET /health`**.
 `GET /api/prices/{ticker}?period=...`
 
 - **Alpha Vantage** when `ALPHA_VANTAGE_API_KEY` is set (subject to free-tier limits); otherwise **Yahoo Finance** via [yfinance](https://github.com/ranaroussi/yfinance).
-- `DYNE` maps to **`DYN`** on Yahoo; `RNA` maps to **`AVDL`** (Avidity).
+- `DYNE` maps to **`DYN`** on Yahoo (see `YAHOO_SYMBOLS` in [`app/yahoo_prices.py`](app/yahoo_prices.py)).
 - For long ranges (`2y`, `5y`, `max`, …), Yahoo is typically used. On error or rate limits, behavior falls back as implemented in [`app/routers/prices.py`](app/routers/prices.py).
 
 Uses the same DB context as peers for ticker validation where applicable.
@@ -128,20 +138,18 @@ Uses the same DB context as peers for ticker validation where applicable.
 
    [2/3] Generating embeddings and seeding dmd_mechanisms …
      → Embedding DYNE (Dyne Therapeutics) … done
-     → Embedding RNA (Avidity Biosciences) … done
      → Embedding SRPT (Sarepta Therapeutics) … done
      → Embedding WVE (Wave Life Sciences) … done
 
    [3/3] Seeding clinical_metrics …
      → DYNE … done
-     → RNA … done
      → SRPT … done
      → WVE … done
 
    ============================================================
    Seed complete. Tables populated:
-     • dmd_mechanisms   — 4 rows with 1536-dim embeddings
-     • clinical_metrics — 4 rows with mock Phase 1/2 data
+     • dmd_mechanisms  — 3 rows with 1536-dim embeddings
+     • clinical_metrics — 3 rows with mock Phase 1/2 data
    ============================================================
    ```
 
@@ -150,7 +158,7 @@ Uses the same DB context as peers for ticker validation where applicable.
 ```
 dmd_mechanisms
   id             bigserial PK
-  ticker         text UNIQUE          -- DYNE | RNA | SRPT | WVE
+  ticker         text UNIQUE          -- DYNE | SRPT | WVE
   company_name   text
   mechanism_text text                 -- full mechanism description
   embedding      vector(1536)         -- text-embedding-3-small
