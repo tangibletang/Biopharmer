@@ -20,16 +20,20 @@ export function ThemeToggle() {
     localStorage.setItem('theme', next ? 'dark' : 'light')
   }
 
-  // Avoid hydration mismatch — render nothing until client mounts
   if (!mounted) return null
 
   return (
     <button
       onClick={toggle}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="fixed bottom-5 right-5 z-50 w-9 h-9 flex items-center justify-center rounded-full bg-surface border border-border text-muted hover:text-primary hover:border-accent/40 transition-all shadow-lg text-base select-none"
+      className="fixed top-3.5 right-5 z-50 flex items-center gap-2 px-3 py-1.5 rounded-lg
+                 bg-surface border border-border shadow-sm cursor-pointer select-none
+                 text-xs font-medium text-muted
+                 hover:text-primary hover:border-accent/50 hover:bg-surface-raised
+                 transition-all duration-150"
     >
-      {isDark ? '☀' : '☽'}
+      <span className="text-sm leading-none">{isDark ? '☀' : '☽'}</span>
+      <span>{isDark ? 'Light mode' : 'Dark mode'}</span>
     </button>
   )
 }

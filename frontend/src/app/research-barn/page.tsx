@@ -275,38 +275,41 @@ function ResearchBarnContent() {
       <div className="flex flex-col h-screen overflow-hidden bg-canvas">
 
         {/* Top bar — mode toggle lives here */}
-        <header className="flex items-center gap-4 px-6 py-3 border-b border-border bg-surface shrink-0">
+        <header className="flex items-center gap-4 px-6 py-4 border-b border-border bg-surface shrink-0">
           <a href="/" className="text-xs text-muted hover:text-primary transition-colors tracking-widest uppercase shrink-0">
             ← Hub
           </a>
 
-          {/* Mode toggle — prominent, centered */}
-          <div className="flex items-center gap-1 p-1 bg-canvas border border-border rounded-lg mx-auto">
+          {/* Mode toggle — big, centered, obviously clickable */}
+          <div className="flex items-center gap-1.5 p-1.5 bg-canvas border border-border rounded-xl mx-auto shadow-inner">
             <button
               onClick={() => setDmdMode('company')}
               className={[
-                'px-4 py-1.5 rounded text-xs font-semibold transition-all',
+                'px-6 py-2.5 rounded-lg text-sm font-semibold transition-all flex flex-col items-center gap-0.5',
                 dmdMode === 'company'
-                  ? 'bg-surface text-primary shadow-sm'
-                  : 'text-muted hover:text-primary',
+                  ? 'bg-surface text-primary shadow-sm border border-border'
+                  : 'text-muted hover:text-primary hover:bg-surface/50',
               ].join(' ')}
             >
-              Company View
+              <span>Company View</span>
+              <span className="text-[10px] font-normal text-muted">Timeline · AI Research</span>
             </button>
             <button
               onClick={() => setDmdMode('competitive')}
               className={[
-                'px-4 py-1.5 rounded text-xs font-semibold transition-all',
+                'px-6 py-2.5 rounded-lg text-sm font-semibold transition-all flex flex-col items-center gap-0.5',
                 dmdMode === 'competitive'
-                  ? 'bg-surface-raised text-accent shadow-sm border border-border'
-                  : 'text-muted hover:text-primary',
+                  ? 'bg-surface text-accent shadow-sm border border-accent/30'
+                  : 'text-muted hover:text-primary hover:bg-surface/50',
               ].join(' ')}
             >
-              ⊞ Competitive Overview
+              <span>⊞ Competitive Overview</span>
+              <span className="text-[10px] font-normal text-muted">All tickers · Price history</span>
             </button>
           </div>
 
-          <span className="text-xs text-muted shrink-0">v0.1 MVP</span>
+          {/* spacer to balance the ← Hub link */}
+          <span className="w-12 shrink-0" />
         </header>
 
         {/* ── Competitive mode: full screen ── */}
@@ -334,16 +337,16 @@ function ResearchBarnContent() {
               <span className="text-xs text-muted">DMD · live coverage</span>
             </div>
 
-            <nav className="flex gap-1 px-6 pt-3 border-b border-border bg-canvas shrink-0">
+            <nav className="flex gap-2 px-6 pt-3 border-b border-border bg-canvas shrink-0">
               {DMD_TABS.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setDmdTab(tab.id)}
                   className={[
-                    'px-4 py-2 text-xs rounded-t transition-colors',
+                    'px-6 py-2.5 text-sm font-semibold rounded-t transition-all border border-b-0',
                     dmdTab === tab.id
-                      ? 'bg-surface text-primary border border-b-0 border-border'
-                      : 'text-muted hover:text-primary',
+                      ? 'bg-surface text-primary border-border'
+                      : 'text-muted hover:text-primary border-transparent hover:border-border/50 hover:bg-surface/40',
                   ].join(' ')}
                 >
                   {tab.label}
@@ -407,16 +410,16 @@ function ResearchBarnContent() {
           <span className="text-sm text-muted">{config.universe}</span>
         </div>
 
-        <nav className="flex gap-1 px-6 pt-3 border-b border-border bg-canvas shrink-0">
+        <nav className="flex gap-2 px-6 pt-3 border-b border-border bg-canvas shrink-0">
           {(['timeline', 'research'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setSectorTab(tab)}
               className={[
-                'px-4 py-2 text-xs rounded-t transition-colors',
+                'px-6 py-2.5 text-sm font-semibold rounded-t transition-all border border-b-0',
                 sectorTab === tab
-                  ? 'bg-surface text-primary border border-b-0 border-border'
-                  : 'text-muted hover:text-primary',
+                  ? 'bg-surface text-primary border-border'
+                  : 'text-muted hover:text-primary border-transparent hover:border-border/50 hover:bg-surface/40',
               ].join(' ')}
             >
               {tab === 'timeline' ? 'Timeline' : 'The Research Barn'}
