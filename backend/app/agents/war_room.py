@@ -56,7 +56,10 @@ def search_scientific_peers(ticker: str) -> list[dict]:
     Tool: search_scientific_peers
     Retrieves mechanism text + clinical metrics for the 3 closest scientific
     peers using pgvector cosine similarity on the mechanism embedding.
+    Falls back to curated DMD comps if the database is unavailable.
     """
+    from app.agents.fallback_context import fallback_context
+
     sql = """
         WITH base AS (
             SELECT embedding
@@ -79,7 +82,13 @@ def search_scientific_peers(ticker: str) -> list[dict]:
         ORDER  BY m.embedding <=> base.embedding
         LIMIT  3;
     """
-    return fetch_all(sql, (ticker, ticker))
+    try:
+        rows = fetch_all(sql, (ticker, ticker))
+        if rows:
+            return rows
+    except Exception:
+        pass
+    return fallback_context(ticker).get("peers", [])
 
 
 def search_adverse_events(ticker: str) -> dict | None:

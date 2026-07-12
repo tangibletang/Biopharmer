@@ -28,6 +28,7 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 
 from app.agents.war_room import search_scientific_peers
+from app.agents.fallback_context import fallback_context
 from app.database import fetch_one
 
 load_dotenv()
@@ -201,26 +202,25 @@ EXPLORER_PERSONAS: list[tuple[str, str]] = [
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 def _load_context(ticker: str) -> dict:
-    row = fetch_one(
-        "SELECT mechanism_text, company_name FROM dmd_mechanisms WHERE ticker = %s",
-        (ticker,),
-    )
-    mechanism_text = row["mechanism_text"] if row else "Mechanism unknown."
-    company_name = row["company_name"] if row else ticker
-
-    clinical = fetch_one(
-        "SELECT emax_pct, half_life_days, grade_3_ae_pct, audit_text FROM clinical_metrics WHERE ticker = %s",
-        (ticker,),
-    )
-    clinical_data = dict(clinical) if clinical else {}
-    peers = search_scientific_peers(ticker)
-
-    return {
-        "mechanism_text": mechanism_text,
-        "company_name": company_name,
-        "clinical_data": clinical_data,
-        "peers": peers,
-    }
+    try:
+        row = fetch_one(
+            "SELECT mechanism_text, company_name FROM dmd_mechanisms WHERE ticker = %s",
+            (ticker,),
+        )
+        clinical = fetch_one(
+            "SELECT emax_pct, half_life_days, grade_3_ae_pct, audit_text FROM clinical_metrics WHERE ticker = %s",
+            (ticker,),
+        )
+        if row:
+            return {
+                "mechanism_text": row["mechanism_text"],
+                "company_name": row["company_name"],
+                "clinical_data": dict(clinical) if clinical else {},
+                "peers": search_scientific_peers(ticker),
+            }
+    except Exception:
+        pass
+    return fallback_context(ticker)
 
 
 def _context_block(ctx: dict) -> str:
