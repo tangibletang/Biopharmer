@@ -8,6 +8,7 @@ import { ALL_TICKERS, COMPANY_NAMES, TICKER_COLORS } from '../mockData'
 import TimelineTab from '../components/tabs/TimelineTab'
 import ProximityMapTab from '../components/tabs/ProximityMapTab'
 import WarRoomTab from '../components/tabs/WarRoomTab'
+import TradingTab from '../components/tabs/TradingTab'
 import { fetchTickerStripPriceSummary } from '@/lib/tickerPriceStrip'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -234,11 +235,12 @@ function SectorSidebar({
 // ── DMD company-level tabs ────────────────────────────────────────────────────
 
 type DmdMode = 'company' | 'competitive'
-type DmdTab  = 'timeline' | 'research'
+type DmdTab  = 'timeline' | 'research' | 'trading'
 
 const DMD_TABS: { id: DmdTab; label: string }[] = [
   { id: 'timeline', label: 'Timeline' },
   { id: 'research', label: 'The Research Barn' },
+  { id: 'trading',  label: 'Live Trading' },
 ]
 
 // ── Main content (reads searchParams) ────────────────────────────────────────
@@ -375,6 +377,7 @@ function ResearchBarnContent() {
                   prefillFocus={dmdPrefillFocus}
                 />
               )}
+              {dmdTab === 'trading' && <TradingTab />}
             </main>
           </>
         )}

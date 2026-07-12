@@ -185,16 +185,6 @@ EXPLORER_PERSONAS: list[tuple[str, str]] = [
         "an analyst comparing this program to its closest scientific peers "
         "and the broader exon-skipping / DMD gene-therapy space",
     ),
-    (
-        "Safety & Execution",
-        "a safety-focused analyst stress-testing AE rates, mechanism-specific toxicity, "
-        "manufacturing risk, and management execution track record",
-    ),
-    (
-        "Valuation & Catalysts",
-        "an equity analyst framing what the market is currently pricing in "
-        "and which binary events or data readouts would re-rate the stock",
-    ),
 ]
 
 
@@ -316,8 +306,6 @@ async def explorer_node(state: WarRoomState) -> dict:
     )
     angles_text = orchestrator_msg["content"] if orchestrator_msg else "Investigate the thesis broadly."
 
-    n = min(3, len(EXPLORER_PERSONAS))
-
     async def run_one(label: str, persona_desc: str) -> dict:
         resp = await _llm_with_tools.ainvoke(
             [
@@ -344,7 +332,7 @@ async def explorer_node(state: WarRoomState) -> dict:
         return {"role": "explorer", "agent": label, "content": content, "iteration": iteration}
 
     results = await asyncio.gather(*[
-        run_one(label, desc) for label, desc in EXPLORER_PERSONAS[:n]
+        run_one(label, desc) for label, desc in EXPLORER_PERSONAS
     ])
     return {"transcript": transcript + list(results)}
 
