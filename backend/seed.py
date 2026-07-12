@@ -84,7 +84,7 @@ COMPANIES = [
             "emax_pct": 8.72,
             "half_life_days": 28.0,
             "grade_3_ae_pct": 6.2,
-            "approval_stage": "BLA Pending",
+            "approval_stage": "BLA Submitted",
             "mechanism_class": "AOC",
             "eligible_patient_pct": 13.0,
             "audit_text": (
@@ -95,7 +95,8 @@ COMPANIES = [
                 "and sustained functional improvement across NSAA, 10MWT, and PODCI through 24 "
                 "months. Grade 3+ AE rate 6.2%; primary SAE was transient LFT elevation (n=1, "
                 "resolved). FDA Breakthrough Therapy Designation granted August 2025. BLA "
-                "submission for accelerated approval on track Q2 2026. Cash $1.1B at YE2025."
+                "submitted May 26, 2026 for accelerated approval (Priority Review requested); "
+                "Phase 3 FORZETTO confirmatory trial initiated. Cash $1.1B at YE2025."
             ),
         },
     },
@@ -131,8 +132,7 @@ COMPANIES = [
                 "clinical trials on hold (July 2025). FDA approved boxed warning for acute serious "
                 "liver injury/acute liver failure (Nov 2025). Indication NARROWED to ambulatory "
                 "patients only — non-ambulatory use no longer licensed. Grade 3+ AE rate 12.4%. "
-                "FY2025 ELEVIDYS revenue significantly below pre-crisis estimates due to safety "
-                "overhang and label restriction."
+                "Commercial run-rate stabilizing into mid-2026; EXPEDITION long-term follow-up ongoing."
             ),
         },
     },
@@ -155,7 +155,7 @@ COMPANIES = [
             "emax_pct": 9.0,
             "half_life_days": 14.0,
             "grade_3_ae_pct": 0.0,
-            "approval_stage": "Phase 2",
+            "approval_stage": "Pre-NDA",
             "mechanism_class": "ASO",
             "eligible_patient_pct": 10.0,
             "audit_text": (
@@ -166,7 +166,8 @@ COMPANIES = [
                 "at 48 weeks. Grade 3+ AE rate: 0% — all treatment-related AEs were mild (4 "
                 "events in 3 participants); zero serious adverse events; zero discontinuations; "
                 "best-in-class tolerability profile in the DMD exon-skipping class. FDA confirmed "
-                "accelerated approval pathway. NDA submission planned 2026. WVE-007 (obesity): "
+                "accelerated approval pathway. NDA still expected in 2026 (H2 target) with monthly "
+                "dosing support. WVE-007 (obesity): "
                 "200mg dose 9.4% visceral fat reduction (Phase 1 INLIGHT); 400mg dose failed "
                 "0.9% weight loss (March 2026), stock fell 56%."
             ),

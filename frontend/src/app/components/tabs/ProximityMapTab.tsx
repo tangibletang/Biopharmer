@@ -11,7 +11,7 @@ import { TICKER_DATA, TICKER_COLORS, ALL_TICKERS } from '../../mockData'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const TODAY = '2026-04-15'
+const TODAY = '2026-06-30'
 
 const TYPE_COLOR = {
   positive: '#3fb950',

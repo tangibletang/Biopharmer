@@ -24,16 +24,19 @@ export function ThemeToggle() {
 
   return (
     <button
+      type="button"
       onClick={toggle}
-      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="fixed top-3.5 right-5 z-50 flex items-center gap-2 px-3 py-1.5 rounded-lg
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={isDark ? 'Light mode' : 'Dark mode'}
+      className="fixed top-3 right-4 z-50 flex h-8 w-8 items-center justify-center rounded-lg
                  bg-surface border border-border shadow-sm cursor-pointer select-none
-                 text-xs font-medium text-muted
+                 text-sm text-muted
                  hover:text-primary hover:border-accent/50 hover:bg-surface-raised
                  transition-all duration-150"
     >
-      <span className="text-sm leading-none">{isDark ? '☀' : '☽'}</span>
-      <span>{isDark ? 'Light mode' : 'Dark mode'}</span>
+      <span className="leading-none" aria-hidden>
+        {isDark ? '☀' : '☽'}
+      </span>
     </button>
   )
 }

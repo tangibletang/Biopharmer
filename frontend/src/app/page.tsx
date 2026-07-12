@@ -37,14 +37,10 @@ export default function HubPage() {
   return (
     <div className="min-h-screen bg-canvas flex flex-col">
       {/* Top bar */}
-      <header className="flex items-center justify-between px-8 py-4 border-b border-border bg-surface/60 backdrop-blur-sm">
+      <header className="flex items-center px-8 py-4 border-b border-border bg-surface/60 backdrop-blur-sm">
         <div>
           <span className="text-accent font-bold tracking-[0.2em] text-sm">BIOPHARMER</span>
           <span className="ml-3 text-[10px] text-muted">Biotech investing</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />
-          <span className="text-[10px] text-muted">DMD live · more soon</span>
         </div>
       </header>
 

@@ -250,7 +250,7 @@ function ResearchBarnContent() {
   const config       = SECTOR_CONFIG[sector]
 
   // DMD state
-  const [dmdMode, setDmdMode]           = useState<DmdMode>('company')
+  const [dmdMode, setDmdMode]           = useState<DmdMode>('competitive')
   const [dmdTicker, setDmdTicker]       = useState<Ticker>('SRPT')
   const [dmdTab, setDmdTab]             = useState<DmdTab>('timeline')
   const [dmdCatalysts, setDmdCatalysts] = useState<Partial<Record<Ticker, string>>>({})
@@ -308,8 +308,8 @@ function ResearchBarnContent() {
             </button>
           </div>
 
-          {/* spacer to balance the ← Hub link */}
-          <span className="w-12 shrink-0" />
+          {/* spacer so the theme toggle doesn't cover the mode control */}
+          <span className="w-14 shrink-0" aria-hidden />
         </header>
 
         {/* ── Competitive mode: full screen ── */}
@@ -402,7 +402,6 @@ function ResearchBarnContent() {
           <span className="text-xs text-muted" style={{ color: config.accentColor }}>
             {config.label} · coming soon
           </span>
-          <span className="ml-auto text-xs text-muted">v0.2</span>
         </header>
 
         <div className="flex items-baseline gap-3 px-6 py-4 border-b border-border shrink-0">

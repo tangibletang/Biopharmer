@@ -7,11 +7,11 @@ export const CLINICAL_DATA: Record<Ticker, ClinicalSnapshot> = {
     emax_pct: 8.72,
     half_life_days: 28.0,
     grade_3_ae_pct: 6.2,
-    approval_stage: 'BLA Pending',
+    approval_stage: 'BLA Submitted',
     mechanism_class: 'AOC',
     eligible_patient_pct: 13.0,
     audit_text:
-      'Z-rostudirsen (DYNE-251, exon 51 skip). DELIVER REC topline: primary endpoint met — 5.46% dystrophin at 6 months (muscle content-adjusted, p<0.0001), 7-fold change from baseline; 8.72% unadjusted. Unprecedented functional improvement at 24 months. BTD granted Aug 2025. BLA submission Q2 2026.',
+      'Z-rostudirsen (DYNE-251, exon 51 skip). DELIVER REC met primary endpoint — 5.46% muscle content-adjusted dystrophin at 6 months (p<0.0001). BTD Aug 2025. BLA submitted May 26, 2026 for accelerated approval; Priority Review requested; Phase 3 FORZETTO confirmatory trial underway. Potential U.S. launch Q1 2027 if approved.',
   },
   SRPT: {
     emax_pct: 28.1,
@@ -21,17 +21,17 @@ export const CLINICAL_DATA: Record<Ticker, ClinicalSnapshot> = {
     mechanism_class: 'Gene Therapy',
     eligible_patient_pct: 40.0,
     audit_text:
-      'ELEVIDYS (delandistrogene moxeparvovec, SRP-9001). FDA accelerated approval June 2023; label expanded to ages 4+ in June 2024. EMBARK Part 2 positive (Jan 2025), 3-year durability data positive (Jan 2026). Three patient deaths from acute liver failure (Mar, Jun, Jul 2025) led to FDA-mandated boxed warning (Nov 2025) and indication narrowing to ambulatory patients only. AAVrh74 serotype.',
+      'ELEVIDYS (delandistrogene moxeparvovec, SRP-9001). FDA accelerated approval June 2023; label expanded ages 4+ June 2024. EMBARK 3-year durability positive (Jan 2026). Three acute liver-failure deaths (2025) → boxed warning Nov 2025 and ambulatory-only label. Commercial run-rate stabilizing; EXPEDITION long-term follow-up ongoing.',
   },
   WVE: {
     emax_pct: 9.0,
     half_life_days: 14.0,
     grade_3_ae_pct: 0.0,
-    approval_stage: 'Phase 2',
+    approval_stage: 'Pre-NDA',
     mechanism_class: 'ASO',
     eligible_patient_pct: 10.0,
     audit_text:
-      'WVE-N531 (exon 53 skip). FORWARD-53 Ph2 (n=11): 24-week mean dystrophin 9.0% (4.6–13.9%), 48-week 7.8% (88% boys >5%). Best-in-class safety: no SAEs. FDA confirmed accelerated approval pathway; NDA submission planned 2026. WVE-007 (obesity/GLP-1 complement) spiked 183% in Dec 2025 on Phase 1 fat data, then crashed 56% Mar 2026 when high-dose cohort disappointed.',
+      'WVE-N531 (exon 53 skip). FORWARD-53 Ph2: 24-week mean dystrophin 9.0%, 48-week 7.8% with functional benefit and zero SAEs. FDA confirmed accelerated-approval pathway; NDA still expected in 2026 (monthly dosing package). WVE-007 obesity program spiked Dec 2025 then crashed Mar 2026 on high-dose failure — DMD filing remains the near-term catalyst.',
   },
 }
 
@@ -111,7 +111,13 @@ const DYNE_PRICES: StockPoint[] = [
   { date: '2026-02-23', price: 15.62 }, { date: '2026-03-02', price: 14.86 },
   { date: '2026-03-09', price: 17.92 }, { date: '2026-03-16', price: 17.56 },
   { date: '2026-03-23', price: 17.14 }, { date: '2026-03-30', price: 18.84 },
-  { date: '2026-04-06', price: 18.68 }, { date: '2026-04-13', price: 19.00 },
+  { date: '2026-04-06', price: 18.35 }, { date: '2026-04-13', price: 19.00 },
+  { date: '2026-04-20', price: 20.02 }, { date: '2026-04-27', price: 18.04 },
+  { date: '2026-05-04', price: 17.71 }, { date: '2026-05-11', price: 18.46 },
+  { date: '2026-05-18', price: 16.54 }, { date: '2026-05-25', price: 17.37 },
+  { date: '2026-06-01', price: 18.63 }, { date: '2026-06-08', price: 16.81 },
+  { date: '2026-06-15', price: 18.73 }, { date: '2026-06-22', price: 20.87 },
+  { date: '2026-06-29', price: 21.26 }, { date: '2026-07-06', price: 22.84 },
 ]
 
 
@@ -175,7 +181,13 @@ const SRPT_PRICES: StockPoint[] = [
   { date: '2026-02-23', price: 16.76 },  { date: '2026-03-02', price: 16.71 },
   { date: '2026-03-09', price: 16.40 },  { date: '2026-03-16', price: 16.69 },
   { date: '2026-03-23', price: 19.97 },  { date: '2026-03-30', price: 23.23 },
-  { date: '2026-04-06', price: 21.18 },  { date: '2026-04-13', price: 21.79 },
+  { date: '2026-04-06', price: 22.80 },  { date: '2026-04-13', price: 21.79 },
+  { date: '2026-04-20', price: 21.42 },  { date: '2026-04-27', price: 20.98 },
+  { date: '2026-05-04', price: 22.04 },  { date: '2026-05-11', price: 19.40 },
+  { date: '2026-05-18', price: 17.01 },  { date: '2026-05-25', price: 16.80 },
+  { date: '2026-06-01', price: 17.61 },  { date: '2026-06-08', price: 15.55 },
+  { date: '2026-06-15', price: 15.77 },  { date: '2026-06-22', price: 17.65 },
+  { date: '2026-06-29', price: 17.02 },  { date: '2026-07-06', price: 19.18 },
 ]
 
 const WVE_PRICES: StockPoint[] = [
@@ -238,7 +250,13 @@ const WVE_PRICES: StockPoint[] = [
   { date: '2026-02-23', price: 13.93 }, { date: '2026-03-02', price: 13.12 },
   { date: '2026-03-09', price: 13.02 }, { date: '2026-03-16', price: 11.76 },
   { date: '2026-03-23', price: 6.37 },  { date: '2026-03-30', price: 7.28 },
-  { date: '2026-04-06', price: 7.18 },  { date: '2026-04-13', price: 7.26 },
+  { date: '2026-04-06', price: 7.09 },  { date: '2026-04-13', price: 7.26 },
+  { date: '2026-04-20', price: 7.58 },  { date: '2026-04-27', price: 6.94 },
+  { date: '2026-05-04', price: 7.47 },  { date: '2026-05-11', price: 7.07 },
+  { date: '2026-05-18', price: 6.40 },  { date: '2026-05-25', price: 6.38 },
+  { date: '2026-06-01', price: 6.26 },  { date: '2026-06-08', price: 5.70 },
+  { date: '2026-06-15', price: 6.00 },  { date: '2026-06-22', price: 6.17 },
+  { date: '2026-06-29', price: 5.68 },  { date: '2026-07-06', price: 6.32 },
 ]
 
 // ── Milestones (dates aligned to price data where plotted on chart) ─────────
@@ -318,29 +336,36 @@ const DYNE_MILESTONES: Milestone[] = [
   {
     date: '2026-03-09',
     label: 'DELIVER Registrational Topline Results — Positive',
-    detail: 'Dyne announced positive topline results from the DELIVER Phase 1/2 registrational cohort for z-rostudirsen. Functional endpoints showed significant improvement vs natural history at 6 months, supporting the planned BLA submission for accelerated approval in Q2 2026. DYN rallied 20% on the week.',
+    detail: 'Dyne announced positive topline results from the DELIVER Phase 1/2 registrational cohort for z-rostudirsen. Functional endpoints showed significant improvement vs natural history at 6 months, supporting a BLA for accelerated approval. DYN rallied ~20% on the week.',
+    type: 'positive',
+    category: 'historical',
+  },
+  {
+    date: '2026-05-18',
+    label: 'FORZETTO Phase 3 Confirmatory Trial Initiated',
+    detail: 'Dyne initiated the global Phase 3 FORZETTO confirmatory trial of z-rostudirsen in ambulatory exon 51–amenable DMD — randomized, placebo-controlled, designed to support conversion from accelerated to traditional approval and ex-U.S. filings.',
+    type: 'positive',
+    category: 'historical',
+  },
+  {
+    date: '2026-05-26',
+    label: 'BLA Submitted — Z-Rostudirsen Accelerated Approval',
+    detail: 'Dyne submitted a Biologics License Application to FDA for z-rostudirsen (20 mg/kg Q4W) in exon 51 DMD, seeking Accelerated Approval on dystrophin as a surrogate endpoint and requesting Priority Review. Company guided to a potential U.S. launch in Q1 2027 if Priority Review is granted and the application is approved on the anticipated timeline. DYN rallied into early July as the filing de-risked the near-term regulatory path.',
     type: 'positive',
     category: 'historical',
   },
   // ── Projected ───────────────────────────────────────────────────────────
   {
-    date: '2026-06-15',
-    label: 'BLA Submission for Accelerated Approval',
-    detail: 'Dyne expects to submit a Biologics License Application for z-rostudirsen (DMD, exon 51) under the accelerated approval pathway using dystrophin as a surrogate endpoint. FDA confirmed the pathway in pre-BLA discussions. PDUFA date would be approximately Q1 2027 under standard review.',
-    type: 'positive',
-    category: 'projected',
-  },
-  {
     date: '2026-10-19',
     label: 'ACHIEVE Registrational Topline — DM1',
-    detail: 'Expected topline results from the ACHIEVE registrational cohort for z-basivarsen in myotonic dystrophy type 1 (DM1). If data supports a DM1 NDA filing, Dyne would have two near-simultaneous regulatory submissions — a significant inflection point for the FORCE platform franchise value.',
+    detail: 'Expected topline results from the ACHIEVE registrational cohort for z-basivarsen in myotonic dystrophy type 1 (DM1). If data supports a DM1 NDA filing, Dyne would have two near-simultaneous regulatory submissions — a significant inflection for FORCE platform franchise value.',
     type: 'positive',
     category: 'projected',
   },
   {
     date: '2027-02-01',
-    label: 'PDUFA Date — Z-Rostudirsen (DMD)',
-    detail: 'Anticipated FDA action date for z-rostudirsen BLA under accelerated approval in DMD. Approval would make Dyne the first small-molecule oligonucleotide with accelerated approval in the exon 51-amenable patient population (~13% of DMD). Rejection or CRL would require a complete response and reset the timeline.',
+    label: 'PDUFA / FDA Action — Z-Rostudirsen (DMD)',
+    detail: 'Anticipated FDA action window for the z-rostudirsen BLA under accelerated approval (timing depends on Priority Review). Approval would make Dyne the first TfR1-targeted AOC with accelerated approval in exon 51–amenable DMD (~13% of patients). A CRL would reset the timeline into confirmatory FORZETTO readout.',
     type: 'positive',
     category: 'projected',
   },
@@ -449,23 +474,23 @@ const SRPT_MILESTONES: Milestone[] = [
   },
   // ── Projected ───────────────────────────────────────────────────────────
   {
-    date: '2026-07-06',
-    label: 'EXPEDITION Long-Term Follow-Up Interim',
-    detail: 'Interim safety and durability data from EXPEDITION, the long-term follow-up study for EMBARK patients (~52 enrolled). The key question: are ambulatory patients maintaining functional benefits at year 4? Any evidence of declining efficacy would pressure the commercial case for ELEVIDYS re-dosing investment.',
+    date: '2026-07-15',
+    label: 'EXPEDITION Long-Term Follow-Up Update',
+    detail: 'Next expected safety and durability readout window from EXPEDITION (Study 9001-305), the long-term follow-up for EMBARK patients (~52 still followed). Key question: are ambulatory patients maintaining Year-3 functional benefits? Any hint of fading efficacy would pressure the commercial case for ELEVIDYS.',
     type: 'neutral',
     category: 'projected',
   },
   {
     date: '2026-11-02',
     label: 'Next-Gen Capsid IND Filing (SRPT-9003)',
-    detail: 'Sarepta expected to file IND for next-generation AAVrh74-derived capsid with reduced hepatotoxicity risk — directly addressing the boxed warning. A successful IND acceptance would signal a clear path back to non-ambulatory patients and represent a major re-rating catalyst for the long-term franchise.',
+    detail: 'Sarepta expected to file IND for next-generation AAVrh74-derived capsid with reduced hepatotoxicity risk — directly addressing the boxed warning. A successful IND acceptance would signal a clearer path back toward non-ambulatory patients and a long-term franchise re-rating.',
     type: 'positive',
     category: 'projected',
   },
   {
     date: '2027-01-26',
     label: 'FY2026 ELEVIDYS Revenue vs $400M Baseline',
-    detail: 'Full-year 2026 ELEVIDYS revenue expected in the $350–450M range post-label restriction (vs $600M+ pre-crisis estimates). Crossing the $400M threshold and showing sequential quarterly growth would signal commercial franchise stabilization and is the key trigger for multiple expansion back toward pre-crisis levels.',
+    detail: 'Full-year 2026 ELEVIDYS revenue still modeled in the ~$350–450M range post-label restriction (vs $600M+ pre-crisis). Crossing ~$400M with sequential quarterly growth would signal franchise stabilization and is a key trigger for multiple expansion.',
     type: 'neutral',
     category: 'projected',
   },
@@ -510,23 +535,23 @@ const WVE_MILESTONES: Milestone[] = [
   },
   // ── Projected ───────────────────────────────────────────────────────────
   {
-    date: '2026-06-29',
-    label: 'WVE-N531 NDA Submission for Accelerated Approval',
-    detail: 'Wave and FDA confirmed the accelerated approval pathway using dystrophin as a surrogate endpoint remains available for WVE-N531. NDA submission expected mid-2026 based on FORWARD-53 48-week data package. If accepted for review, the PDUFA date would fall in Q1 2027. Approval would provide non-dilutive commercial cash flow to fund the obesity program.',
+    date: '2026-09-15',
+    label: 'WVE-N531 NDA Submission (H2 2026 Target)',
+    detail: 'Wave remains on track to file an NDA in 2026 for accelerated approval of WVE-N531 based on FORWARD-53, including data to support monthly dosing. Mid-year updates kept the filing in H2 rather than a fixed June date. Acceptance would set up a ~Q1 2027 PDUFA and Wave\'s first commercial product.',
     type: 'positive',
     category: 'projected',
   },
   {
     date: '2026-10-19',
     label: 'WVE-007 Phase 2 Trial Design Announced',
-    detail: 'Wave expected to present a redesigned Phase 2 protocol for WVE-007 following the high-dose disappointment. Key decisions: dose selection (likely 200mg ceiling), patient population, and primary endpoint (visceral fat vs body weight). Some analysts believe an optimized Ph2 could rehabilitate the program if the 200mg dose data holds.',
+    detail: 'Wave expected to present a redesigned Phase 2 protocol for WVE-007 after the high-dose disappointment. Key decisions: dose selection (likely ≤200mg), patient population, and primary endpoint (visceral fat vs body weight). An optimized Ph2 could rehabilitate the obesity story if lower-dose biology holds.',
     type: 'neutral',
     category: 'projected',
   },
   {
     date: '2027-02-01',
     label: 'WVE-N531 PDUFA Date — FDA Decision',
-    detail: 'Anticipated FDA action date for WVE-N531 NDA in exon 53-amenable DMD. Approval would validate the stereopure chemistry platform and provide Wave\'s first commercial product revenue. The safety profile (zero SAEs in FORWARD-53) is the strongest argument for approval despite below-average absolute dystrophin.',
+    detail: 'Anticipated FDA action date if the WVE-N531 NDA is filed mid/late 2026 and accepted. Approval would validate the stereopure chemistry platform and Wave\'s first commercial revenue. Zero SAEs in FORWARD-53 remains the strongest approval argument despite modest absolute dystrophin.',
     type: 'positive',
     category: 'projected',
   },

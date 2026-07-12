@@ -10,7 +10,7 @@ export interface ClinicalSnapshot {
   half_life_days: number
   grade_3_ae_pct: number
   audit_text: string
-  approval_stage: string        // Phase 2 | BLA Pending | Pre-BLA | Approved
+  approval_stage: string        // Phase 2 | Pre-NDA | BLA Pending | BLA Submitted | Approved
   mechanism_class: string       // ASO | AOC | Gene Therapy
   eligible_patient_pct: number  // % of DMD patients eligible
 }

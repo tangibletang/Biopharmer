@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Light theme (default) ────────────────────────────────────────────────── */
+/* ── Light theme (opt-in via ThemeToggle; app defaults to .dark) ───────────── */
 :root {
   color-scheme: light;
 
